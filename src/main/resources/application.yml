@@ -12,3 +12,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+llm:
+  api:
+    key: ${LLM_API_KEY}
