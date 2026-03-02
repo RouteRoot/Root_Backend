@@ -1,0 +1,47 @@
+# ==========================================
+# Java / Spring Boot (Build Tool)
+# ==========================================
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ==========================================
+# IDE (IntelliJ IDEA, Eclipse 등)
+# ==========================================
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.classpath
+.project
+.settings/
+
+# ==========================================
+# OS Generated Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# 환경 변수 및 보안 파일 (★가장 중요★)
+# ==========================================
+*.log
+application-secret.yml
+application-secret.properties
+application-dev.yml
+.env
