@@ -114,9 +114,12 @@ public class RoadmapService {
     }
 
     @Transactional
-    public RoadmapResponseDto getRoadmap(Long roadmapId){
+    public RoadmapResponseDto getRoadmap(Long roadmapId, String loginId){
         // DB에서 로드맵 탐색
         Roadmap roadmap = roadmapRepository.findById(roadmapId).orElseThrow(() -> new IllegalArgumentException("해당 로드맵을 찾을 수 없습니다."));
+        if(!roadmap.getUser().getLoginId().equals(loginId)){
+            throw new IllegalArgumentException("자신의 로드맵만 조회할 수 있습니다.");
+        }
         // DTO 반환
         return new RoadmapResponseDto(roadmap);
     }

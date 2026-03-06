@@ -34,9 +34,11 @@ public class RoadmapController {
     }
     // 로드맵 Get
     @GetMapping("/{roadmapId}")
-    public ResponseEntity<RoadmapResponseDto> getRoadmap(@PathVariable Long roadmapId){
+    public ResponseEntity<RoadmapResponseDto> getRoadmap(@PathVariable Long roadmapId, Authentication authentication){
+        // 토큰 아이디 추출
+        String loginId = authentication.getName();
         // JSON 요청
-        RoadmapResponseDto response = roadmapService.getRoadmap(roadmapId);
+        RoadmapResponseDto response = roadmapService.getRoadmap(roadmapId, loginId);
         // JSON 반환(200)
         return ResponseEntity.ok(response);
     }
