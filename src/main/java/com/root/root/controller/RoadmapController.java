@@ -7,6 +7,7 @@ import com.root.root.service.RoadmapService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -19,9 +20,11 @@ public class RoadmapController {
     private final RoadmapService roadmapService;
 
     @PostMapping("/generate")
-    public ResponseEntity<Map<String, Object>> generateRoadmap(@RequestBody RoadmapRequestDto request){
+    public ResponseEntity<Map<String, Object>> generateRoadmap(@RequestBody RoadmapRequestDto request, Authentication authentication){
+        // 토큰에서 로그인 아이디 추출
+        String loginId = authentication.getName();
         // 로드맵 생성 및 DB 저장
-        Roadmap savedRoadmap = roadmapService.generateAndSaveRoadmap(request);
+        Roadmap savedRoadmap = roadmapService.generateAndSaveRoadmap(loginId, request);
         // response data
         Map<String, Object> response = new HashMap<>();
         response.put("message", "AI 로드맵이 성공적으로 생성되었습니다!");

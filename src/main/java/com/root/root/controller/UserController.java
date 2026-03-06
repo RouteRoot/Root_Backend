@@ -1,5 +1,6 @@
 package com.root.root.controller;
 
+import com.root.root.dto.LoginRequestDto;
 import com.root.root.dto.UserSignupDto;
 import com.root.root.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -26,5 +30,16 @@ public class UserController {
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequestDto request){
+        String token = userService.login(request);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+        response.put("message", "로그인 성공!");
+
+        return ResponseEntity.ok(response);
     }
 }

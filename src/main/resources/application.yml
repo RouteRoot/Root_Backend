@@ -16,3 +16,6 @@ spring:
 llm:
   api:
     key: ${LLM_API_KEY}
+
+jwt:
+  token: ${JWT_TOKEN}

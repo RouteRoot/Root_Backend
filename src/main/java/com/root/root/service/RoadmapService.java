@@ -23,9 +23,9 @@ public class RoadmapService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public Roadmap generateAndSaveRoadmap(RoadmapRequestDto request) {
+    public Roadmap generateAndSaveRoadmap(String loginId, RoadmapRequestDto request) {
         // 유저 찾기(DB에 없으면 에러)
-        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
         // LLM에게 보낼 프롬프트 완성
         String prompt = String.format("""
                         [Role]

@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RoadmapRequestDto {
-    private Long userId;
+    //private Long userId;
     private String major;
     private String hope;
     private String acquired;
