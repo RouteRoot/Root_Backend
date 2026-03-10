@@ -27,7 +27,7 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
         }
         // PW 암호화(Spring Security 붙여야 됨)
-        String encryptedPassword = passwordEncoder.encode(dto.getPassword());
+        String encryptedPassword = passwordEncoder.encode(dto.getLoginPw());
         User user = dto.toEntity(encryptedPassword);
 
         return userRepository.save(user);

@@ -13,9 +13,9 @@ public class LLMRoadmapResponseDto {
     @Getter
     @Setter
     public static class PhaseDto{
-        private int phase;
+        private Integer phaseNumber;
         private String phaseTitle;
-        private int estimatedWeeks;
+        private Integer estimatedWeeks;
         private List<TaskDto> tasks;
     }
 

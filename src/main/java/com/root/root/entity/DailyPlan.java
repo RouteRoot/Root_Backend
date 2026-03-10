@@ -14,17 +14,20 @@ public class DailyPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int dayNumber;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "weekly_plan_id", nullable = false)
+    private WeeklyPlan weeklyPlan;
+
+    private Integer dayNumber;
+
+    @Column(length = 255)
     private String topic;
 
     @Column(columnDefinition = "TEXT")
     private String description;
-    private int estimatedHours;
+
+    private Integer estimatedHours;
 
     @Column(nullable = false)
     private boolean isCompleted = false;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "weekly_plan_id")
-    private WeeklyPlan weeklyPlan;
 }

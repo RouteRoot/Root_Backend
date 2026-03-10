@@ -38,7 +38,7 @@ public class RoadmapController {
         // 토큰 아이디 추출
         String loginId = authentication.getName();
         // JSON 요청
-        RoadmapResponseDto response = roadmapService.getRoadmap(roadmapId, loginId);
+        RoadmapResponseDto response = roadmapService.getRoadmap(loginId);
         // JSON 반환(200)
         return ResponseEntity.ok(response);
     }

@@ -17,13 +17,16 @@ public class Phase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int phase;
-    private String phaseTitle;
-    private int estimatedWeeks;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "roadmap_id")
+    @JoinColumn(name = "roadmap_id", nullable = false)
     private Roadmap roadmap;
+
+    private Integer phaseNumber;
+
+    @Column(length = 100)
+    private String phaseTitle;
+
+    private Integer estimatedWeeks;
 
     @OneToMany(mappedBy = "phase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExamTask> tasks = new ArrayList<>();

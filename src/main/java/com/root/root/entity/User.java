@@ -20,7 +20,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String loginId; // 회원 아이디
 
-    @Column
+    @Column(length = 255)
     private String loginPw; // 회원 비밀번호
 
     @Column(nullable = false, length = 50)
@@ -39,6 +39,12 @@ public class User {
     private String provider;
     private String providerId;
 
+    @Column(nullable = false)
+    private boolean isOnboardingCompleted = false; // 온보딩 완료 여부
+
+    @Column
+    private int totalExp = 0; // 누적 경험치(배지 시스템용)
+
     // 로드맵 생성 시 업데이트될 추가 정보들
     // 회원가입 시 입력 X, 로드맵 생성 시 입력
     private String major;
@@ -48,4 +54,7 @@ public class User {
     private int daily, weekly;
     private String mylevel;
     private String target;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Roadmap roadmap;
 }

@@ -17,12 +17,14 @@ public class WeeklyPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int weekNumber;
-    private String weeklyGoal;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exam_task_id")
+    @JoinColumn(name = "exam_task_id", nullable = false)
     private ExamTask examTask;
+
+    private Integer weekNumber;
+
+    @Column(length = 255)
+    private String weeklyGoal;
 
     @OneToMany(mappedBy = "weeklyPlan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DailyPlan> dailyPlans = new ArrayList<>();

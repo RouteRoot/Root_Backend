@@ -17,6 +17,16 @@ public class ExamTask {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "phase_id", nullable = false)
+    private Phase phase;
+
+    // ExamSchedule과 연결
+    //@ManyToOne(fetch = FetchType.LAZY)
+    //@JoinColumn(name = "exam_schedule_id")
+    //private ExamSchedule examSchedule;
+
+    @Column(length = 100)
     private String taskName;
 
     @Column(columnDefinition = "TEXT")
@@ -24,17 +34,9 @@ public class ExamTask {
 
     private Integer totalWeeks;
 
-    @Enumerated(EnumType.STRING)
-    private TaskStatus status = TaskStatus.NOT_STARTED;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "phase_id")
-    private Phase phase;
+    @Column(length = 20)
+    private String status = "NOT_STARTED";
 
     @OneToMany(mappedBy = "examTask", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WeeklyPlan> weeklyPlans = new ArrayList<>();
-
-    public enum TaskStatus{
-        NOT_STARTED, IN_PROGRESS, COMPLETED
-    }
 }

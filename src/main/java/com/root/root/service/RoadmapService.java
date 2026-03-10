@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class RoadmapService {
@@ -26,6 +28,23 @@ public class RoadmapService {
     public Roadmap generateAndSaveRoadmap(String loginId, RoadmapRequestDto request) {
         // 유저 찾기(DB에 없으면 에러)
         User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+        // 기존 로드맵이 존재한다면 덮어쓰기 위해 삭제
+        Optional<Roadmap> existingRoadmap = roadmapRepository.findByUserId(user.getId());
+        if(existingRoadmap.isPresent()){
+            user.setRoadmap(null);
+            roadmapRepository.delete(existingRoadmap.get());
+            roadmapRepository.flush();
+        }
+        // 입력받은 로드맵 조건 저장 및 업데이트
+        user.setMajor(request.getMajor());
+        user.setHope(request.getHope());
+        user.setAcquired(request.getAcquired());
+        user.setStatus(request.getStatus());
+        user.setDaily(request.getDaily());
+        user.setWeekly(request.getWeekly());
+        user.setMylevel(request.getMylevel());
+        user.setTarget(request.getTarget());
+        user.setOnboardingCompleted(true);
         // LLM에게 보낼 프롬프트 완성
         String prompt = String.format("""
                         [Role]
@@ -79,18 +98,11 @@ public class RoadmapService {
             // 엔티티 생성 및 데이터 입력
             Roadmap roadmap = new Roadmap();
             roadmap.setUser(user);
-            roadmap.setMajor(request.getMajor());
-            roadmap.setHope(request.getHope());
-            roadmap.setAcquired(request.getAcquired());
-            roadmap.setStatus(request.getStatus());
-            roadmap.setDaily(request.getDaily());
-            roadmap.setWeekly(request.getWeekly());
-            roadmap.setMylevel(request.getMylevel());
-            roadmap.setTarget(request.getTarget());
+            user.setRoadmap(roadmap);
             // 관계
             for(LLMRoadmapResponseDto.PhaseDto phaseDto : responseDto.getRoadmap()){
                 Phase phase = new Phase();
-                phase.setPhase(phaseDto.getPhase());
+                phase.setPhaseNumber(phaseDto.getPhaseNumber());
                 phase.setPhaseTitle(phaseDto.getPhaseTitle());
                 phase.setEstimatedWeeks(phaseDto.getEstimatedWeeks());
                 phase.setRoadmap(roadmap);
@@ -99,7 +111,7 @@ public class RoadmapService {
                     ExamTask examTask = new ExamTask();
                     examTask.setTaskName(taskDto.getTaskName());
                     examTask.setDescription(taskDto.getDescription());
-                    examTask.setStatus(ExamTask.TaskStatus.NOT_STARTED);
+                    examTask.setStatus("NOT_STARTED");
                     examTask.setPhase(phase);
 
                     phase.getTasks().add(examTask);
@@ -114,12 +126,10 @@ public class RoadmapService {
     }
 
     @Transactional
-    public RoadmapResponseDto getRoadmap(Long roadmapId, String loginId){
+    public RoadmapResponseDto getRoadmap(String loginId){
+        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
         // DB에서 로드맵 탐색
-        Roadmap roadmap = roadmapRepository.findById(roadmapId).orElseThrow(() -> new IllegalArgumentException("해당 로드맵을 찾을 수 없습니다."));
-        if(!roadmap.getUser().getLoginId().equals(loginId)){
-            throw new IllegalArgumentException("자신의 로드맵만 조회할 수 있습니다.");
-        }
+        Roadmap roadmap = roadmapRepository.findByUserId(user.getId()).orElseThrow(() -> new IllegalArgumentException("아직 생성된 로드맵이 없습니다."));
         // DTO 반환
         return new RoadmapResponseDto(roadmap);
     }

@@ -16,21 +16,11 @@ public class Roadmap {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // [User Input Data]
-    private String major;
-    private String hope;
-    private String acquired;
-    private String status;
-    private int daily;
-    private int weekly;
-    private String mylevel;
-    private String target;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    // 1:1 mapping(user:roadmap)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
-
+    // Phase Container
     @OneToMany(mappedBy = "roadmap", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Phase> phases = new ArrayList<>();
 }

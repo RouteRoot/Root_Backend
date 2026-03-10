@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Getter@NoArgsConstructor
 public class UserSignupDto {
     private String loginId;
-    private String password;
+    private String loginPw;
     private String name;
     private String nickname;
     private LocalDate birthDate;
