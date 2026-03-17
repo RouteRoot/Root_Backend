@@ -36,6 +36,9 @@ public class PlanService {
         User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
         ExamTask examTask = examTaskRepository.findById(request.getExamTaskId()).orElseThrow(() -> new IllegalArgumentException("해당 자격증을 찾을 수 없습니다."));
 
+        // 보안 로직
+        validateTaskOwnership(examTask, loginId);
+
         // 기존 학습 플랜 존재 여부 검증
         boolean hasExistingPlan = weeklyPlanRepository.existsByExamTaskId(examTask.getId());
         if(hasExistingPlan){
@@ -142,6 +145,9 @@ public class PlanService {
         // 자격증 존재 여부 검증
         ExamTask examTask = examTaskRepository.findById(examTaskId).orElseThrow(() -> new IllegalArgumentException("해당 자격증을 찾을 수 없습니다."));
 
+        // 보안 로직
+        validateTaskOwnership(examTask, loginId);
+
         // 플랜 조회
         List<WeeklyPlan> weeklyPlans = weeklyPlanRepository.findByExamTaskIdOrderByWeekNumberAsc(examTaskId);
 
@@ -159,11 +165,22 @@ public class PlanService {
         // 해당 DailyPlan 탐색
         DailyPlan dailyPlan = dailyPlanRepository.findById(dailyPlanId).orElseThrow(() -> new IllegalArgumentException("해당 학습 플랜을 찾을 수 없습니다."));
 
+        // 보안 로직
+        validateTaskOwnership(dailyPlan.getWeeklyPlan().getExamTask(), loginId);
+
         // Toggle
         boolean currentStatus = dailyPlan.isCompleted();
         dailyPlan.setCompleted(!currentStatus);
 
         // 변경된 상태값 반환
         return dailyPlan.isCompleted();
+    }
+
+    // 보안 로직
+    private void validateTaskOwnership(ExamTask examTask, String loginId){
+        String ownerId = examTask.getPhase().getRoadmap().getUser().getLoginId();
+        if(!ownerId.equals(loginId)){
+            throw new IllegalArgumentException("잘못된 접근입니다.");
+        }
     }
 }

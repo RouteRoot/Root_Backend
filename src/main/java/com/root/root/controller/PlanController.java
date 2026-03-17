@@ -30,7 +30,7 @@ public class PlanController {
         List<WeeklyPlan> savedPlans = planService.generateAndSavePlan(loginId, request);
 
         // DTO 변환
-        PlanResponseDto responseDto = convertToDto(savedPlans, request.getCertificationName());
+        PlanResponseDto responseDto = convertToDto(savedPlans, request.getExamTaskId(), request.getCertificationName());
 
         return ResponseEntity.ok(responseDto);
     }
@@ -44,10 +44,10 @@ public class PlanController {
         List<WeeklyPlan> weeklyPlans = planService.getStudyPlan(loginId, examTaskId);
 
         // 타겟 자격증 이름 get
-        String targetExam = weeklyPlans.get(0).getExamTask().getTaskName();
+        String taskName = weeklyPlans.get(0).getExamTask().getTaskName();
 
         // DTO 변환
-        PlanResponseDto responseDto = convertToDto(weeklyPlans, targetExam);
+        PlanResponseDto responseDto = convertToDto(weeklyPlans, examTaskId, taskName);
 
         return ResponseEntity.ok(responseDto);
     }
@@ -68,15 +68,17 @@ public class PlanController {
         return ResponseEntity.ok(response);
     }
 
-    private PlanResponseDto convertToDto(List<WeeklyPlan> savedPlans, String targetExam){
+    private PlanResponseDto convertToDto(List<WeeklyPlan> savedPlans, Long examTaskId, String taskName){
         PlanResponseDto response = new PlanResponseDto();
-        response.setTargetExam(targetExam);
+        response.setExamTaskId(examTaskId);
+        response.setTaskName(taskName);
         response.setTotalWeeks(savedPlans.size());
 
         List<PlanResponseDto.WeeklyPlanDto> weeklyDtoList = new ArrayList<>();
 
         for(WeeklyPlan wp : savedPlans){
             PlanResponseDto.WeeklyPlanDto weeklyDto = new PlanResponseDto.WeeklyPlanDto();
+            weeklyDto.setWeeklyPlanId(wp.getId());
             weeklyDto.setWeekNumber(wp.getWeekNumber());
             weeklyDto.setWeeklyGoal(wp.getWeeklyGoal());
 
@@ -87,9 +89,9 @@ public class PlanController {
                 dailyDto.setTopic(dp.getTopic());
                 dailyDto.setDescription(dp.getDescription());
                 dailyDto.setEstimatedHours(dp.getEstimatedHours());
-                dailyDto.setRest(dp.isRest());
+                dailyDto.setIsRest(dp.isRest());
                 dailyDto.setStudyDate(dp.getStudyDate());
-                dailyDto.setCompleted(dp.isCompleted());
+                dailyDto.setIsCompleted(dp.isCompleted());
                 dailyDto.setDailyPlanId(dp.getId());
 
                 dailyDtoList.add(dailyDto);

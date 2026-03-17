@@ -1,5 +1,7 @@
 package com.root.root.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Setter;
 import lombok.Getter;
 
@@ -9,13 +11,15 @@ import java.util.List;
 @Getter
 @Setter
 public class PlanResponseDto {
-    private String targetExam;
+    private Long examTaskId;
+    private String taskName;
     private int totalWeeks;
     private List<WeeklyPlanDto> weeklyPlans;
 
     @Getter
     @Setter
     public static class WeeklyPlanDto{
+        private Long weeklyPlanId;
         private int weekNumber;
         private String weeklyGoal;
         private List<DailyPlanDto> dailyPlans;
@@ -29,8 +33,10 @@ public class PlanResponseDto {
         private String topic;
         private String description;
         private int estimatedHours;
-        private boolean isRest;
+        private Boolean isCompleted;
+        private Boolean isRest;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         private LocalDate studyDate;
-        private boolean isCompleted;
     }
 }
