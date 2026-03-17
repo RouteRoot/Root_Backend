@@ -8,10 +8,7 @@ import com.root.root.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +21,7 @@ public class PlanController {
 
     @PostMapping
     public ResponseEntity<PlanResponseDto> createPlan(Authentication authentication, @RequestBody PlanCreateRequestDto request){
-        // 토큰에서 파싱된 로그인 아이디 get
+        // 토큰에서 로그인 아이디 파싱
         String loginId = authentication.getName();
 
         // 서비스 로직 호출
@@ -32,6 +29,23 @@ public class PlanController {
 
         // DTO 변환
         PlanResponseDto responseDto = convertToDto(savedPlans, request.getCertificationName());
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/{examTaskId}")
+    public ResponseEntity<PlanResponseDto> getPlan(Authentication authentication, @PathVariable Long examTaskId){
+        // 토큰에서 로그인 아이디 파싱
+        String loginId = authentication.getName();
+
+        // Service에서 엔티티 리스트 조회
+        List<WeeklyPlan> weeklyPlans = planService.getStudyPlan(loginId, examTaskId);
+
+        // 타겟 자격증 이름 get
+        String targetExam = weeklyPlans.get(0).getExamTask().getTaskName();
+
+        // DTO 변환
+        PlanResponseDto responseDto = convertToDto(weeklyPlans, targetExam);
 
         return ResponseEntity.ok(responseDto);
     }
@@ -56,9 +70,9 @@ public class PlanController {
                 dailyDto.setDescription(dp.getDescription());
                 dailyDto.setEstimatedHours(dp.getEstimatedHours());
                 dailyDto.setRest(dp.isRest());
-                //dailyDto.setStudyDate(dp.getStudyDate());
-                //dailyDto.setCompleted(dp.isCompleted());
-                //dailyDto.setDailyPlanId(dp.getId());
+                dailyDto.setStudyDate(dp.getStudyDate());
+                dailyDto.setCompleted(dp.isCompleted());
+                dailyDto.setDailyPlanId(dp.getId());
 
                 dailyDtoList.add(dailyDto);
             }

@@ -131,4 +131,21 @@ public class PlanService {
             throw new RuntimeException("LLM 학습 플랜 JSON 파싱 또는 DB 저장 중 오류가 발생했습니다. " + e.getMessage());
         }
     }
+
+    @Transactional
+    public List<WeeklyPlan> getStudyPlan(String loginId, Long examTaskId){
+        // 유저 검증
+        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+
+        // 자격증 존재 여부 검증
+        ExamTask examTask = examTaskRepository.findById(examTaskId).orElseThrow(() -> new IllegalArgumentException("해당 자격증을 찾을 수 없습니다."));
+
+        // 플랜 조회
+        List<WeeklyPlan> weeklyPlans = weeklyPlanRepository.findByExamTaskIdOrderByWeekNumberAsc(examTaskId);
+
+        if(weeklyPlans.isEmpty()){
+            throw new IllegalArgumentException("해당 자격증에 대한 학습 플랜이 아직 생성되지 않았습니다.");
+        }
+        return weeklyPlans;
+    }
 }
