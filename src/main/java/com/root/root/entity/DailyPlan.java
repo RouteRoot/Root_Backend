@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @Setter
@@ -20,6 +22,8 @@ public class DailyPlan {
 
     private Integer dayNumber;
 
+    private LocalDate studyDate;
+
     @Column(length = 255)
     private String topic;
 
@@ -27,6 +31,9 @@ public class DailyPlan {
     private String description;
 
     private Integer estimatedHours;
+
+    @Column(nullable = false)
+    private boolean isRest = false;
 
     @Column(nullable = false)
     private boolean isCompleted = false;
