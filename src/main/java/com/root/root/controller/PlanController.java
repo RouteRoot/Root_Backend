@@ -11,7 +11,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/plans")
@@ -48,6 +50,22 @@ public class PlanController {
         PlanResponseDto responseDto = convertToDto(weeklyPlans, targetExam);
 
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PatchMapping("/daily/{dailyPlanId}/check")
+    public ResponseEntity<Map<String, Object>> checkDailyPlan(Authentication authentication, @PathVariable Long dailyPlanId){
+        String loginId = authentication.getName();
+
+        // 서비스 호출, 상태 변경, 결과 get
+        boolean updatedStatus = planService.togglePlanCompletion(loginId, dailyPlanId);
+
+        // JSON 응답
+        Map<String, Object> response = new HashMap<>();
+        response.put("dailyPlanId", dailyPlanId);
+        response.put("isCompleted", updatedStatus);
+        response.put("message", updatedStatus ? "학습 완료" : "학습 완료 취소");
+
+        return ResponseEntity.ok(response);
     }
 
     private PlanResponseDto convertToDto(List<WeeklyPlan> savedPlans, String targetExam){

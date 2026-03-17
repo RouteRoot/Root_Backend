@@ -6,6 +6,7 @@ import com.root.root.entity.DailyPlan;
 import com.root.root.entity.ExamTask;
 import com.root.root.entity.User;
 import com.root.root.entity.WeeklyPlan;
+import com.root.root.repository.DailyPlanRepository;
 import com.root.root.repository.ExamTaskRepository;
 import com.root.root.repository.UserRepository;
 import com.root.root.repository.WeeklyPlanRepository;
@@ -27,6 +28,7 @@ public class PlanService {
     private final UserRepository userRepository;
     private final ExamTaskRepository examTaskRepository;
     private final WeeklyPlanRepository weeklyPlanRepository;
+    private final DailyPlanRepository dailyPlanRepository;
 
     @Transactional
     public List<WeeklyPlan> generateAndSavePlan(String loginId, PlanCreateRequestDto request) {
@@ -147,5 +149,21 @@ public class PlanService {
             throw new IllegalArgumentException("해당 자격증에 대한 학습 플랜이 아직 생성되지 않았습니다.");
         }
         return weeklyPlans;
+    }
+
+    @Transactional
+    public boolean togglePlanCompletion(String loginId, Long dailyPlanId){
+        // 유저 검증
+        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+
+        // 해당 DailyPlan 탐색
+        DailyPlan dailyPlan = dailyPlanRepository.findById(dailyPlanId).orElseThrow(() -> new IllegalArgumentException("해당 학습 플랜을 찾을 수 없습니다."));
+
+        // Toggle
+        boolean currentStatus = dailyPlan.isCompleted();
+        dailyPlan.setCompleted(!currentStatus);
+
+        // 변경된 상태값 반환
+        return dailyPlan.isCompleted();
     }
 }
