@@ -14,11 +14,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/posts")
+@RequestMapping("/api/posts")
 public class PostController {
 
     private final PostService postService;
 
+    // 게시글 목록 조회
+    // GET /api/posts?boardType=FREE
     @GetMapping
     public ResponseEntity<?> getPosts(@RequestParam BoardType boardType) {
         try {
@@ -28,6 +30,8 @@ public class PostController {
         }
     }
 
+    // 스터디 모집상태 필터링
+    // GET /api/posts/study?status=RECRUITING
     @GetMapping("/study")
     public ResponseEntity<?> getStudyPosts(@RequestParam StudyStatus status) {
         try {
@@ -37,6 +41,8 @@ public class PostController {
         }
     }
 
+    // 게시글 상세 조회
+    // GET /api/posts/1
     @GetMapping("/{postId}")
     public ResponseEntity<?> getPost(@PathVariable Long postId) {
         try {
@@ -48,6 +54,8 @@ public class PostController {
         }
     }
 
+    // 게시글 작성
+    // POST /api/posts
     @PostMapping
     public ResponseEntity<?> createPost(@RequestBody PostRequestDto requestDto) {
         try {
@@ -59,6 +67,8 @@ public class PostController {
         }
     }
 
+    // 게시글 수정
+    // PUT /api/posts/1
     @PutMapping("/{postId}")
     public ResponseEntity<?> updatePost(@PathVariable Long postId,
                                         @RequestBody PostRequestDto requestDto) {
@@ -71,6 +81,8 @@ public class PostController {
         }
     }
 
+    // 게시글 삭제
+    // DELETE /api/posts/1
     @DeleteMapping("/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable Long postId) {
         try {

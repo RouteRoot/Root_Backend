@@ -12,12 +12,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/comments")
+@RequestMapping("/api/comments")
 public class CommentController {
 
     private final CommentService commentService;
 
     // 댓글 목록 조회
+    // GET /api/comments?postId=1
     @GetMapping
     public ResponseEntity<?> getComments(@RequestParam Long postId) {
         try {
@@ -28,6 +29,7 @@ public class CommentController {
     }
 
     // 댓글 작성
+    // POST /api/comments
     @PostMapping
     public ResponseEntity<?> createComment(@RequestBody CommentRequestDto requestDto) {
         try {
@@ -40,6 +42,7 @@ public class CommentController {
     }
 
     // 댓글 수정
+    // PUT /api/comments/1
     @PutMapping("/{commentId}")
     public ResponseEntity<?> updateComment(@PathVariable Long commentId,
                                            @RequestBody CommentRequestDto requestDto) {
@@ -53,6 +56,7 @@ public class CommentController {
     }
 
     // 댓글 삭제
+    // DELETE /api/comments/1
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
         try {

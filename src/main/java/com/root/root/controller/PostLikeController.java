@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/likes")
+@RequestMapping("/api/likes")
 public class PostLikeController {
 
     private final PostLikeService postLikeService;
 
     // 좋아요 토글
-    // POST /api/v1/likes?userId=1&postId=1
+    // POST /api/likes?userId=1&postId=1
     @PostMapping
     public ResponseEntity<?> toggleLike(@RequestParam Long userId,
                                         @RequestParam Long postId) {
@@ -29,7 +29,7 @@ public class PostLikeController {
     }
 
     // 좋아요 수 조회
-    // GET /api/v1/likes/count?postId=1
+    // GET /api/likes/count?postId=1
     @GetMapping("/count")
     public ResponseEntity<?> getLikeCount(@RequestParam Long postId) {
         try {
@@ -40,7 +40,7 @@ public class PostLikeController {
     }
 
     // 내가 좋아요 눌렀는지 확인
-    // GET /api/v1/likes/check?userId=1&postId=1
+    // GET /api/likes/check?userId=1&postId=1
     @GetMapping("/check")
     public ResponseEntity<?> isLiked(@RequestParam Long userId,
                                      @RequestParam Long postId) {
