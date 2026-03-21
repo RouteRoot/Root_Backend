@@ -23,7 +23,6 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // 댓글 목록 조회
     public List<CommentResponseDto> getComments(Long postId) {
         return commentRepository.findByPostId(postId)
                 .stream()
@@ -31,11 +30,13 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    // 댓글 작성
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto requestDto) {
+        // 유저 검증
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+
+        // 게시글 존재 여부 검증
         Post post = postRepository.findById(requestDto.getPostId())
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
@@ -48,18 +49,18 @@ public class CommentService {
         return new CommentResponseDto(commentRepository.save(comment));
     }
 
-    // 댓글 수정
     @Transactional
     public CommentResponseDto updateComment(Long commentId, CommentRequestDto requestDto) {
+        // 댓글 존재 여부 검증
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 없습니다."));
         comment.update(requestDto.getContent());
         return new CommentResponseDto(comment);
     }
 
-    // 댓글 삭제
     @Transactional
     public void deleteComment(Long commentId) {
+        // 댓글 존재 여부 검증
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 없습니다."));
         commentRepository.delete(comment);

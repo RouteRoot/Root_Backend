@@ -18,34 +18,35 @@ public class PostLikeService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // 좋아요 토글
     @Transactional
     public boolean toggleLike(Long userId, Long postId) {
+        // 유저 검증
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+
+        // 게시글 존재 여부 검증
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
+        // 이미 좋아요 눌렀으면 취소, 아니면 추가 (토글)
         return postLikeRepository.findByUserIdAndPostId(userId, postId)
                 .map(like -> {
-                    postLikeRepository.delete(like); // 이미 좋아요 → 취소
+                    postLikeRepository.delete(like);
                     return false;
                 })
                 .orElseGet(() -> {
                     postLikeRepository.save(PostLike.builder()
                             .user(user)
                             .post(post)
-                            .build()); // 좋아요 추가
+                            .build());
                     return true;
                 });
     }
 
-    // 좋아요 수 조회
     public int getLikeCount(Long postId) {
         return postLikeRepository.countByPostId(postId);
     }
 
-    // 내가 좋아요 눌렀는지 확인
     public boolean isLiked(Long userId, Long postId) {
         return postLikeRepository.findByUserIdAndPostId(userId, postId).isPresent();
     }

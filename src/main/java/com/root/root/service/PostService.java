@@ -30,6 +30,7 @@ public class PostService {
     }
 
     public List<PostResponseDto> getStudyPosts(StudyStatus studyStatus) {
+        // boardType을 STUDY로 고정하고 모집 상태로 필터링
         return postRepository.findByBoardTypeAndStudyStatus(BoardType.STUDY, studyStatus)
                 .stream()
                 .map(PostResponseDto::new)
@@ -38,17 +39,22 @@ public class PostService {
 
     @Transactional
     public PostResponseDto getPost(Long postId) {
+        // 게시글 존재 여부 검증
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
+
+        // 조회수 증가
         post.incrementViewCount();
         return new PostResponseDto(post);
     }
 
     @Transactional
     public PostResponseDto createPost(PostRequestDto requestDto) {
+        // 유저 검증
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
 
+        // STUDY 게시판이 아닐 경우 studyStatus는 null로 처리 (Post 생성자에서 자동 처리)
         Post post = Post.builder()
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
@@ -63,8 +69,11 @@ public class PostService {
 
     @Transactional
     public PostResponseDto updatePost(Long postId, PostRequestDto requestDto) {
+        // 게시글 존재 여부 검증
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
+
+        // STUDY 게시판이 아닐 경우 studyStatus 수정 무시 (Post.update()에서 자동 처리)
         post.update(requestDto.getTitle(), requestDto.getContent(),
                 requestDto.getCategory(), requestDto.getStudyStatus());
         return new PostResponseDto(post);
@@ -72,6 +81,7 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long postId) {
+        // 게시글 존재 여부 검증
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
         postRepository.delete(post);
