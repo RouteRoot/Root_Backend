@@ -20,24 +20,9 @@ public class ExamController {
         this.examDataRepository = examDataRepository;
     }
 
-    //테스트 API
-    @GetMapping("/mock")
-    public List<ExamData> getMockExams() {
-        return Arrays.asList(
-                ExamData.builder()
-                        .id(1L)
-                        .examName("정보처리기사 필기")
-                        .category("IT")
-                        .organization("한국산업인력공단")
-                        .description("소프트웨어 설계, 개발, 데이터베이스 구축 등")
-                        .build(),
-                ExamData.builder()
-                        .id(2L)
-                        .examName("SQLD")
-                        .category("IT")
-                        .organization("한국데이터산업진흥원")
-                        .description("데이터 모델링 및 SQL 활용 능력")
-                        .build()
-        );
+    //  DB 데이터 API
+    @GetMapping("/all") 
+    public List<ExamData> getAllExams() {
+        return examDataRepository.findAll();
     }
 }
