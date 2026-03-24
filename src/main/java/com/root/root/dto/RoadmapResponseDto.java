@@ -3,6 +3,7 @@ package com.root.root.dto;
 import com.root.root.entity.ExamTask;
 import com.root.root.entity.Phase;
 import com.root.root.entity.Roadmap;
+import com.root.root.entity.User;
 import lombok.Getter;
 
 import java.util.List;
@@ -12,10 +13,16 @@ import java.util.stream.Collectors;
 public class RoadmapResponseDto {
     private Long roadmapId;
     private List<PhaseDto>  phases;
+    private int daily;
+    private int weekly;
+    private String mylevel;
     // Roadmap -> DTO
-    public RoadmapResponseDto(Roadmap roadmap){
+    public RoadmapResponseDto(Roadmap roadmap, User user){
         this.roadmapId = roadmap.getId();
         this.phases = roadmap.getPhases().stream().map(PhaseDto::new).collect(Collectors.toList());
+        this.daily = user.getDaily();
+        this.weekly = user.getWeekly();
+        this.mylevel = user.getMylevel();
     }
 
     @Getter

@@ -134,6 +134,6 @@ public class RoadmapService {
         // DB에서 로드맵 탐색
         Roadmap roadmap = roadmapRepository.findByUserId(user.getId()).orElseThrow(() -> new IllegalArgumentException("아직 생성된 로드맵이 없습니다."));
         // DTO 반환
-        return new RoadmapResponseDto(roadmap);
+        return new RoadmapResponseDto(roadmap, user);
     }
 }
