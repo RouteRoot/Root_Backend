@@ -1,11 +1,12 @@
 package com.root.root.service;
 
 import com.root.root.dto.LoginRequestDto;
+import com.root.root.dto.UserInfoDto;
 import com.root.root.dto.UserSignupDto;
 import com.root.root.entity.User;
 import com.root.root.repository.UserRepository;
 import com.root.root.util.JwtUtil;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,5 +41,12 @@ public class UserService {
         }
 
         return jwtUtil.createToken(user.getLoginId());
+    }
+
+    @Transactional(readOnly = true)
+    public UserInfoDto getMyInfo(String loginId){
+        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+
+        return UserInfoDto.builder().loginId(user.getLoginId()).name(user.getName()).build();
     }
 }
