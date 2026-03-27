@@ -2,11 +2,13 @@ package com.root.root.service;
 
 import com.root.root.dto.DashboardResponseDto;
 import com.root.root.entity.DailyPlan;
+import com.root.root.entity.ExamTask;
 import com.root.root.entity.Roadmap;
 import com.root.root.entity.User;
 import com.root.root.repository.DailyPlanRepository;
 import com.root.root.repository.RoadmapRepository;
 import com.root.root.repository.UserRepository;
+import com.root.root.repository.ExamTaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +22,10 @@ public class DashboardService {
     private final UserRepository userRepository;
     private final RoadmapRepository roadmapRepository;
     private final DailyPlanRepository dailyPlanRepository;
+    private final ExamTaskRepository examTaskRepository;
 
     @Transactional(readOnly = true)
-    public DashboardResponseDto getDashboardData(String loginId){
+    public DashboardResponseDto getDashboardData(String loginId, Long requestedExamTaskId){
         // 유저 조회
         User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
 
@@ -37,17 +40,23 @@ public class DashboardService {
 
         DashboardResponseDto.RoadmapProgressDto roadmapProgress = DashboardResponseDto.RoadmapProgressDto.builder().totalTasks(totalTasks).completedTasks(completedTasks).build();
 
-        // 오늘의 플랜 및 전체 플랜 진행도 조회
-        List<DailyPlan> allDailyPlans = dailyPlanRepository.findAllByUserId(user.getId());
+        Long targetExamTaskId = requestedExamTaskId;
+        if(targetExamTaskId == null){
+            targetExamTaskId = examTaskRepository.findTasksWithPlansByUserLoginId(loginId).stream().findFirst().map(ExamTask::getId).orElse(null);
+        }
 
-        int totalPlanDays = allDailyPlans.size();
-        int completedPlanDays = (int)allDailyPlans.stream().filter(DailyPlan::isCompleted).count();
+        // 해당 탭(자격증)의 일간 플랜 정보 가져오기 & 진행도 계산
+        DashboardResponseDto.PlanProgressDto planProgress = DashboardResponseDto.PlanProgressDto.builder().totalPlanDays(0).completedPlanDays(0).build();
+        DashboardResponseDto.CurrentStudyPlanDto currentStudyPlan = null;
 
-        DashboardResponseDto.PlanProgressDto planProgress = DashboardResponseDto.PlanProgressDto.builder().totalPlanDays(totalPlanDays).completedPlanDays(completedPlanDays).build();
+        if(targetExamTaskId != null){
+            List<DailyPlan> tabDailyPlans = dailyPlanRepository.findByUserIdAndExamTaskId(user.getId(), targetExamTaskId);
 
-        // 오늘 날짜에 맞는 학습 플랜 탐색, 계획 없으면 null 반환(프론트에서 처리)
-        LocalDate today = LocalDate.now();
-        DashboardResponseDto.CurrentStudyPlanDto currentStudyPlan = allDailyPlans.stream().filter(plan -> today.equals(plan.getStudyDate())).findFirst().map(plan -> DashboardResponseDto.CurrentStudyPlanDto.builder().weeklyPlanId(plan.getWeeklyPlan().getId()).weekNumber(plan.getWeeklyPlan().getWeekNumber()).weeklyGoal(plan.getWeeklyPlan().getWeeklyGoal()).dailyPlanId(plan.getId()).date(plan.getStudyDate()).topic(plan.getTopic()).isCompleted(plan.isCompleted()).build()).orElse(null);
+            planProgress = DashboardResponseDto.PlanProgressDto.builder().totalPlanDays(tabDailyPlans.size()).completedPlanDays((int) tabDailyPlans.stream().filter(DailyPlan::isCompleted).count()).build();
+
+            LocalDate today = LocalDate.now();
+            currentStudyPlan = tabDailyPlans.stream().filter(plan -> today.equals(plan.getStudyDate())).findFirst().map(plan -> DashboardResponseDto.CurrentStudyPlanDto.builder().weeklyPlanId(plan.getWeeklyPlan().getId()).weekNumber(plan.getWeeklyPlan().getWeekNumber()).weeklyGoal(plan.getWeeklyPlan().getWeeklyGoal()).dailyPlanId(plan.getId()).date(plan.getStudyDate()).topic(plan.getTopic()).isCompleted(plan.isCompleted()).build()).orElse(null);
+        }
 
         // 최종 DTO 반환
         return DashboardResponseDto.builder().currentStudyPlan(currentStudyPlan).planProgress(planProgress).roadmapProgress(roadmapProgress).build();

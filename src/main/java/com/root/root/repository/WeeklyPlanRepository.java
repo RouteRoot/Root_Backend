@@ -14,7 +14,12 @@ public interface WeeklyPlanRepository extends JpaRepository<WeeklyPlan, Long> {
     boolean existsByExamTaskId(Long examTaskId);
 
     // 플랜 조회
-    @Query("SELECT DISTINCT w FROM WeeklyPlan w " + "JOIN FETCH w.dailyPlans " + "WHERE w.examTask.id = :examTaskId " + "ORDER BY w.weekNumber ASC")
+    @Query("""
+           SELECT DISTINCT w FROM WeeklyPlan w
+           JOIN FETCH w.dailyPlans
+           WHERE w.examTask.id = :examTaskId
+           ORDER BY w.weekNumber ASC
+           """)
     List<WeeklyPlan> findByExamTaskIdOrderByWeekNumberAsc(@Param("examTaskId") Long examTaskId);
 
     // 플랜 삭제 기능

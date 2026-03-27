@@ -2,12 +2,16 @@ package com.root.root.controller;
 
 import com.root.root.dto.PlanCreateRequestDto;
 import com.root.root.dto.PlanResponseDto;
+import com.root.root.dto.PlanTabResponseDto;
 import com.root.root.entity.DailyPlan;
+import com.root.root.entity.ExamTask;
 import com.root.root.entity.WeeklyPlan;
+import com.root.root.repository.ExamTaskRepository;
 import com.root.root.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -66,6 +70,13 @@ public class PlanController {
         response.put("message", updatedStatus ? "학습 완료" : "학습 완료 취소");
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/tabs")
+    public ResponseEntity<List<PlanTabResponseDto>> getPlanTabs(Authentication authentication){
+        String loginId = authentication.getName();
+        List<PlanTabResponseDto> tabs = planService.getMyPlanTabs(loginId);
+        return ResponseEntity.ok(tabs);
     }
 
     private PlanResponseDto convertToDto(List<WeeklyPlan> savedPlans, Long examTaskId, String taskName){

@@ -8,6 +8,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface RoadmapRepository extends JpaRepository<Roadmap, Long> {
-    @Query("SELECT DISTINCT r FROM Roadmap r " + "JOIN FETCH r.phases " + "WHERE r.user.id = :userId")
+    @Query("""
+           SELECT DISTINCT r FROM Roadmap r
+           JOIN FETCH r.phases
+           WHERE r.user.id = :userId
+           """)
     Optional<Roadmap> findByUserId(@Param("userId") Long userId);
 }

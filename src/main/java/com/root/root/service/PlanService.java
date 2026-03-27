@@ -2,6 +2,7 @@ package com.root.root.service;
 
 import com.root.root.dto.PlanCreateRequestDto;
 import com.root.root.dto.PlanResponseDto;
+import com.root.root.dto.PlanTabResponseDto;
 import com.root.root.entity.DailyPlan;
 import com.root.root.entity.ExamTask;
 import com.root.root.entity.User;
@@ -10,9 +11,9 @@ import com.root.root.repository.DailyPlanRepository;
 import com.root.root.repository.ExamTaskRepository;
 import com.root.root.repository.UserRepository;
 import com.root.root.repository.WeeklyPlanRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
@@ -174,6 +175,13 @@ public class PlanService {
 
         // 변경된 상태값 반환
         return dailyPlan.isCompleted();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PlanTabResponseDto> getMyPlanTabs(String loginId){
+        List<ExamTask> activeTasks = examTaskRepository.findTasksWithPlansByUserLoginId(loginId);
+
+        return activeTasks.stream().map(task -> PlanTabResponseDto.builder().examTaskId(task.getId()).taskName(task.getTaskName()).build()).toList();
     }
 
     // 보안 로직
