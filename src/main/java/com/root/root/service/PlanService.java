@@ -2,6 +2,7 @@ package com.root.root.service;
 
 import com.root.root.dto.PlanCreateRequestDto;
 import com.root.root.dto.PlanResponseDto;
+import com.root.root.dto.PlanTabResponseDto;
 import com.root.root.entity.DailyPlan;
 import com.root.root.entity.ExamTask;
 import com.root.root.entity.User;
@@ -10,9 +11,9 @@ import com.root.root.repository.DailyPlanRepository;
 import com.root.root.repository.ExamTaskRepository;
 import com.root.root.repository.UserRepository;
 import com.root.root.repository.WeeklyPlanRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
@@ -37,7 +38,7 @@ public class PlanService {
         ExamTask examTask = examTaskRepository.findById(request.getExamTaskId()).orElseThrow(() -> new IllegalArgumentException("해당 자격증을 찾을 수 없습니다."));
 
         // 보안 로직
-        validateTaskOwnership(examTask, loginId);
+        validateTaskOwnership(examTask.getId(), loginId);
 
         // 기존 학습 플랜 존재 여부 검증
         boolean hasExistingPlan = weeklyPlanRepository.existsByExamTaskId(examTask.getId());
@@ -146,7 +147,7 @@ public class PlanService {
         ExamTask examTask = examTaskRepository.findById(examTaskId).orElseThrow(() -> new IllegalArgumentException("해당 자격증을 찾을 수 없습니다."));
 
         // 보안 로직
-        validateTaskOwnership(examTask, loginId);
+        validateTaskOwnership(examTask.getId(), loginId);
 
         // 플랜 조회
         List<WeeklyPlan> weeklyPlans = weeklyPlanRepository.findByExamTaskIdOrderByWeekNumberAsc(examTaskId);
@@ -166,7 +167,7 @@ public class PlanService {
         DailyPlan dailyPlan = dailyPlanRepository.findById(dailyPlanId).orElseThrow(() -> new IllegalArgumentException("해당 학습 플랜을 찾을 수 없습니다."));
 
         // 보안 로직
-        validateTaskOwnership(dailyPlan.getWeeklyPlan().getExamTask(), loginId);
+        validateTaskOwnership(dailyPlan.getWeeklyPlan().getExamTask().getId(), loginId);
 
         // Toggle
         boolean currentStatus = dailyPlan.isCompleted();
@@ -176,10 +177,16 @@ public class PlanService {
         return dailyPlan.isCompleted();
     }
 
+    @Transactional(readOnly = true)
+    public List<PlanTabResponseDto> getMyPlanTabs(String loginId){
+        List<ExamTask> activeTasks = examTaskRepository.findTasksWithPlansByUserLoginId(loginId);
+
+        return activeTasks.stream().map(task -> PlanTabResponseDto.builder().examTaskId(task.getId()).taskName(task.getTaskName()).build()).toList();
+    }
+
     // 보안 로직
-    private void validateTaskOwnership(ExamTask examTask, String loginId){
-        String ownerId = examTask.getPhase().getRoadmap().getUser().getLoginId();
-        if(!ownerId.equals(loginId)){
+    private void validateTaskOwnership(Long examTaskId, String loginId){
+        if(!examTaskRepository.isOwnerOfTask(examTaskId, loginId)){
             throw new IllegalArgumentException("잘못된 접근입니다.");
         }
     }
