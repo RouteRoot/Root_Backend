@@ -7,18 +7,15 @@ import org.springframework.web.bind.annotation.*;
 import com.root.root.entity.ExamData;
 import com.root.root.repository.ExamDataRepository;
 import com.root.root.service.ExamDataBatchService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/exams")
+@RequiredArgsConstructor
 public class ExamController {
 
     private final ExamDataRepository examDataRepository;
     private final ExamDataBatchService batchService;
-
-    public ExamController(ExamDataRepository examDataRepository, ExamDataBatchService batchService) {
-        this.examDataRepository = examDataRepository;
-        this.batchService = batchService;
-    }
 
     // DB 데이터 전체 조회
     @GetMapping("/all")
