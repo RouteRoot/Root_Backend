@@ -1,15 +1,12 @@
 package com.root.root.service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -20,7 +17,9 @@ import com.root.root.entity.ExamData;
 import com.root.root.repository.ExamDataRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 
@@ -31,6 +30,7 @@ public class ExamDataBatchService {
     @Value("${openapi.service-key}")
     private String serviceKey;
 
+    @Transactional
     public void fetchAndSaveExams() {
         DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory();
         factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
@@ -48,12 +48,14 @@ public class ExamDataBatchService {
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<byte[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
-
+            if (responseEntity.getBody() == null) {
+                log.warn("API 응답 본문이 비어있습니다.");
+                return;
+            }
 
             String xmlData = new String(responseEntity.getBody(), StandardCharsets.UTF_8);
 
             if (xmlData != null && xmlData.contains("<response>")) {
-
                 xmlData = xmlData.replace("<script/>", "");
 
                 XmlMapper xmlMapper = new XmlMapper();
@@ -61,9 +63,11 @@ public class ExamDataBatchService {
 
                 OpenApiExamResponse response = xmlMapper.readValue(xmlData, OpenApiExamResponse.class);
 
-                if (response != null && response.getBody() != null) {
+                if (response != null && response.getBody() != null && response.getBody().getItems() != null) {
+                    List<ExamData> examsToSave = new ArrayList<>();
+
                     response.getBody().getItems().forEach(item -> {
-                        System.out.println("수집된 종목명: " + item.getJmfldnm());
+                        log.info("수집된 종목명: {}", item.getJmfldnm());
 
                         ExamData exam = ExamData.builder()
                                 .examName(item.getJmfldnm())
@@ -73,8 +77,11 @@ public class ExamDataBatchService {
                                 .description(item.getObligfldnm() + " 분야 자격증")
                                 .isActive(true)
                                 .build();
-                        examDataRepository.save(exam);
+                        
+                        examsToSave.add(exam);
                     });
+                    examDataRepository.saveAll(examsToSave);
+                    log.info("총 {}건의 데이터 저장 완료", examsToSave.size());
                 }
             }
         } catch (Exception e) {
