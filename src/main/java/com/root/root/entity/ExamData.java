@@ -12,10 +12,7 @@ import lombok.*;
 public class ExamData {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, length = 100)
+    private String examCode; // 종목 코드
     private String examName; // 시험명
 
     private String examGroup; // 그룹명

@@ -70,6 +70,7 @@ public class ExamDataBatchService {
                         log.info("수집된 종목명: {}", item.getJmfldnm());
 
                         ExamData exam = ExamData.builder()
+                                .examCode(item.getJmcd())
                                 .examName(item.getJmfldnm())
                                 .examGroup(item.getSeriesnm())
                                 .category(item.getMdobligfldnm())
