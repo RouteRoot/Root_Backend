@@ -19,3 +19,6 @@ llm:
 
 jwt:
   token: "your_temporary_secret_key_for_local_development_at_least_32_chars"
+
+openapi:
+  service-key: "33452f32e23aa97dc7424bedcd2aad9e8da4a1591dd79fc88ecb8fcc4b0a521a"
