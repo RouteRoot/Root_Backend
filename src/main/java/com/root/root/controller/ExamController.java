@@ -2,7 +2,10 @@ package com.root.root.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.root.root.entity.ExamData;
 import com.root.root.repository.ExamDataRepository;
@@ -24,9 +27,9 @@ public class ExamController {
     }
 
     // 자격증 상세 조회
-    @GetMapping("/{id}")
-    public ExamData getExamById(@PathVariable Long id) {
-        return examDataRepository.findById(id)
+    @GetMapping("/{examCode}")
+    public ExamData getExamByCode(@PathVariable String examCode) {
+        return examDataRepository.findById(examCode)
                 .orElseThrow(() -> new RuntimeException("해당 자격증을 찾을 수 없습니다."));
     }
 
