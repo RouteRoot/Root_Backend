@@ -24,7 +24,7 @@ public class ExamSchedule {
     @ManyToOne(fetch = FetchType.LAZY)
     
     
-    @JoinColumn(name = "exam_cde") // ExamData의 PK(종목코드)와 연결
+    @JoinColumn(name = "exam_code") // ExamData의 PK(종목코드)와 연결
     private ExamData examData; 
 
     @Column(length = 100)

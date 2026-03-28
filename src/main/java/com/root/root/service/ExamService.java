@@ -34,22 +34,17 @@ public class ExamService {
                 e.getExamCode(),
                 e.getExamName(),
                 e.getSchedules().stream()
-                        (s -> {
+                        .map(s -> {
                             Long dDay = null;
-        if (s.getExamDate() != null) {
-                 = ChronoUnit
-                
-                
-        return new ExamResponseDto.ScheduleDto(
-     
-
-               s.getRound(),
-
-
+                            if (s.getExamDate() != null) {
+                                dDay = ChronoUnit.DAYS.between(LocalDate.now(), s.getExamDate());
+                            }
+                            
+                            return new ExamResponseDto.ScheduleDto(
+                                    s.getRound(),
                                     s.getExamDate(),
                                     dDay
- 
-                           );
+                            );
                         }).collect(Collectors.toList())
         )).collect(Collectors.toList());
     }
