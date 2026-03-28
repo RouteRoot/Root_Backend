@@ -2,15 +2,17 @@ package com.root.root.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ExamData {
 
+public class ExamData {
     @Id
     private String examCode; // 종목 코드
     private String examName; // 시험명
@@ -25,11 +27,13 @@ public class ExamData {
 
     private String organization; // 주관 기관
 
-    @Column(columnDefinition = "TEXT")
     private String description; // 시험 설명
 
     private String officialUrl; // 공식 링크
 
-    @Builder.Default
-    private boolean isActive = true; // 활성화 여부
+    private boolean isActive; // 활성화 여부
+
+   @OneToMany(mappedBy = "examData", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+   @Builder.Default
+private List<ExamSchedule> schedules = new ArrayList<>();
 }
