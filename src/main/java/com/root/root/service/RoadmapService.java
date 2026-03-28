@@ -7,13 +7,18 @@ import com.root.root.entity.ExamTask;
 import com.root.root.entity.Phase;
 import com.root.root.entity.Roadmap;
 import com.root.root.entity.User;
+import com.root.root.entity.standard.StandardJobRequirement;
 import com.root.root.repository.RoadmapRepository;
+import com.root.root.repository.StandardExamRepository;
+import com.root.root.repository.StandardJobRepository;
 import com.root.root.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,6 +28,9 @@ public class RoadmapService {
     private final RoadmapRepository roadmapRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+
+    private final StandardJobRepository standardJobRepository;
+    private final StandardExamRepository standardExamRepository;
 
     @Transactional
     public Roadmap generateAndSaveRoadmap(String loginId, RoadmapRequestDto request) {
@@ -36,15 +44,37 @@ public class RoadmapService {
             roadmapRepository.flush();
         }
         // 입력받은 로드맵 조건 저장 및 업데이트
+        user.setEducationStatus(request.getEducationStatus());
+        user.setGrade(request.getGrade());
         user.setMajor(request.getMajor());
         user.setHope(request.getHope());
-        user.setAcquired(request.getAcquired());
-        user.setStatus(request.getStatus());
+        user.setMajorRelated(request.isMajorRelated());
+        user.setCareer(request.getCareer());
         user.setDaily(request.getDaily());
         user.setWeekly(request.getWeekly());
         user.setMylevel(request.getMylevel());
         user.setTarget(request.getTarget());
         user.setOnboardingCompleted(true);
+
+        user.getAcquired().clear();
+        if(request.getAcquired() != null && !request.getAcquired().isEmpty()){
+            user.getAcquired().addAll(request.getAcquired());
+        }
+
+        StringBuilder standardDataPrompt = new StringBuilder();
+        List<String> mandatoryTasks = new ArrayList<>();
+
+        standardJobRepository.findByHope(request.getHope()).ifPresent(job -> {
+            standardDataPrompt.append("\n[Standard Data: 직무 필수 자격증 및 큐넷 응시 조건]\n");
+
+            for(StandardJobRequirement req : job.getRequirements()){
+                mandatoryTasks.add(req.getTaskName());
+
+                standardExamRepository.findByCertificationName(req.getTaskName()).ifPresent(exam -> {
+                    standardDataPrompt.append(String.format("- %s (응시 자격: %s)\n", req.getTaskName(), exam.getEligibilityCondition()));
+                });
+            }
+        });
         // LLM에게 보낼 프롬프트 완성
         String prompt = String.format("""
                         [Role]
@@ -52,13 +82,18 @@ public class RoadmapService {
                         너의 임무는 사용자의 현재 상황, 목표, 학습 가능 시간, 실력을 정밀하게 분석하여 가장 현실적이고 효율적인 맞춤형 '자격증' 및 '어학 시험' 취득 로드맵을 설계하는 거야.
                         
                         [User Input Data]
+                        학위 상태: %s
+                        현재 학년: %d (0이면 졸업)
                         전공: %s
                         희망 직무: %s
+                        관련 전공 여부: %b
+                        실무 경력: %d년
                         기취득 스펙: %s
-                        현재 신분: %s
                         확보 가능한 학습 시간: 일간 %d시간, 주간(주말 포함) %d시간
                         실력 자가 진단: %s
                         선호 기업 형태: %s
+                        
+                        %s
                         
                         [Rules]
                         1. [기취득 스펙]에 명시된 자격증은 추천에서 무조건 제외하라. 단, 어학 시험(예: 토익, 토스, 오픽 등)의 경우 사용자의 현재 점수가 [선호 기업 형태]의 일반적 합격 안정권보다 낮다면, 목표 점수를 상향 설정하여 로드맵에 포함시켜라.
@@ -66,7 +101,9 @@ public class RoadmapService {
                         3. [taskName]에는 반드시 대한민국 및 국제적으로 실존하는 공식 자격증/어학 시험의 정확한 명칭만 단답형으로 기재하라. (예: 정보처리기사, 리눅스마스터 2급, SQLD, TOEIC)
                         4. [taskName]에 절대 ‘운영체제 관련 자격증(예: 리눅스마스터 2급)’처럼 부연 설명, 카테고리, 괄호(), ‘예시’라는 단어를 덧붙이지 마라. 오직 공식 명칭만 출력하라.
                         5. [taskName]에 임의로 가상의 자격증을 창작하거나 존재하지 않는 등급(예: 정보처리기사 고급, 파이썬 마스터 초급 등)을 절대 붙이지 마라. 공식 등급이 있는 경우에만 기재하고, 단일 자격증은 명칭만 정확히 기재하라.
-                        6. [현재 신분]을 최우선으로 고려하여 응시 자격 요건을 계산하라. (예: 기사/산업기사 등 학력, 학년 제한이 있는 시험은 반드시 응시 가능 여부를 판단하라. 응시 불가능한 자격증은 절대 추천하지 마라. 필요 시 동일 직무군 내 응시 가능한 대체 자격증을 제시하라.)
+                        6. [Standard Data]에 제공된 필수 자격증은 로드맵 어딘가에 반드시 100% 포함시켜라.
+                        7. [User Input Data]의 현재 학위 상태, 학년, 경력과 [Standard Data]의 응시 자격을 엄격하게 대조하라. 만약 사용자가 현재 시점에 응시 불가능하다면 부족한 학년/경력을 계산하여 응시 자격이 충족되는 미래의 시점(Phase 2 또는 3)으로 해당 자격증을 미뤄서 배치하라. 응시 불가능하다고 누락시키는 것을 절대 금지한다. 
+                        8. 응시 불가로 인한 초반 공백기(Phase 1)에는 응시 제한이 없는 필수 자격증(예: SQLD)이나 어학 시험을 우선 배치하여 로드맵을 꽉 채워라.
                         7. [확보 가능한 학습 시간]과 [실력 자가 진단]을 바탕으로, 각 시험을 준비하고 합격하는 데 필요한 현실적인 소요 기간(주 단위)을 정확하게 산정하라. (소수점은 반드시 올림 처리하여 정수로 출력하라. 과도하게 낙관적인 기간 산정은 금지한다.)
                         8. [선호 기업 형태]에 맞춰 우선순위를 조정하라. (예: 공기업은 한국사, 컴활 등 가산점 자격증 우선 배치. 대기업은 토익 850 이상 또는 오픽 IH 이상 + 직무 기사 자격증. IT기업은 정보처리기사 우선. 단, 사용자 조건에서 현실적으로 도전 가능한 순서로 재배치하라.)
                         9. 로드맵은 사용자가 지치지 않도록 Phase 1(기초), Phase 2(심화), Phase 3(고급)의 3단계로 나누어 구성하라.(Phase 1: 성공 확률이 가장 높은 기초 경쟁력 확보 단계. Phase 2: 직무 직접 경쟁력 강화 단계. Phase 3: 상위 기업 안정권 진입 단계. 각 Phase는 기본적으로 3개의 자격증 또는 어학 시험을 포함해야 한다. 단, 해당 직무 분야에서 현실적으로 선택 가능한 공인 자격증 종류가 적거나, 사용자의 현재 조건에서 합격 가능성이 충분한 시험이 3개 미만일 경우에 한해 1-2개만 포함할 수 있다. 단순히 개수를 맞추기 위해 직무와 무관하거나 전략적으로 의미 없는 자격증을 추가하는 것은 금지한다. 난이도는 반드시 점진적으로 상승해야 한다. 전체 경로는 전략적으로 일관성을 유지해야 한다. )
@@ -90,27 +127,50 @@ public class RoadmapService {
                             ]
                         }
                         """,
-                request.getMajor(), request.getHope(), request.getAcquired(), request.getStatus(), request.getDaily(), request.getWeekly(), request.getMylevel(), request.getTarget()
+                request.getEducationStatus(), request.getGrade(), request.getMajor(), request.getHope(), request.isMajorRelated(), request.getCareer(), (request.getAcquired() != null && !request.getAcquired().isEmpty()) ? request.getAcquired().toString() : "없음", request.getDaily(), request.getWeekly(), request.getMylevel(), request.getTarget(), standardDataPrompt.toString()
         );
-        // LLM 호출해서 JSON 받아오기
-        String jsonResponse = llmService.requestToLlm(prompt);
+
+        // Auto-Retry 로직(3회)
+        int maxRetries = 3;
+        int attempt = 0;
+        boolean isValid = false;
+        LLMRoadmapResponseDto responseDto = null;
+
+        while(attempt < maxRetries && !isValid){
+            attempt++;
+            try{
+                // LLM 호출해서 JSON 받아오기
+                String jsonResponse = llmService.requestToLlm(prompt);
+                // JSON -> DTO 파싱
+                responseDto = objectMapper.readValue(jsonResponse, LLMRoadmapResponseDto.class);
+                // 필수 자격증 누락 여부 검증 로직
+                validateMandatoryTasks(responseDto, mandatoryTasks);
+
+                isValid = true;
+            }catch(IllegalStateException e){
+                if(attempt >= maxRetries){
+                    throw new RuntimeException("로드맵 생성 중 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                }
+            }catch(Exception e){
+                if(attempt >= maxRetries){
+                    throw new RuntimeException("LLM 응답 처리 중 오류가 발생했습니다: " + e.getMessage());
+                }
+            }
+        }
 
         try{
-            // 파싱(JSON -> DTO)
-            LLMRoadmapResponseDto responseDto = objectMapper.readValue(jsonResponse, LLMRoadmapResponseDto.class);
-            // 엔티티 생성 및 데이터 입력
             Roadmap roadmap = new Roadmap();
             roadmap.setUser(user);
             user.setRoadmap(roadmap);
-            // 관계
+
             for(LLMRoadmapResponseDto.PhaseDto phaseDto : responseDto.getRoadmap()){
                 Phase phase = new Phase();
                 phase.setPhaseNumber(phaseDto.getPhaseNumber());
-                phase.setPhaseTitle(phaseDto.getPhaseTitle());
+                phase.setPhaseTitle(phase.getPhaseTitle());
                 phase.setEstimatedWeeks(phaseDto.getEstimatedWeeks());
                 phase.setRoadmap(roadmap);
 
-                for (LLMRoadmapResponseDto.TaskDto taskDto : phaseDto.getTasks()) {
+                for(LLMRoadmapResponseDto.TaskDto taskDto : phaseDto.getTasks()){
                     ExamTask examTask = new ExamTask();
                     examTask.setTaskName(taskDto.getTaskName());
                     examTask.setDescription(taskDto.getDescription());
@@ -124,7 +184,25 @@ public class RoadmapService {
             return roadmapRepository.save(roadmap);
         }catch(Exception e){
             e.printStackTrace();
-            throw new RuntimeException("LLM JSON 파싱 또는 DB 저장 중 오류가 발생했습니다: " + e.getMessage());
+            throw new RuntimeException("DB 저장 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    private void validateMandatoryTasks(LLMRoadmapResponseDto responseDto, List<String> mandatoryTasks){
+        if(mandatoryTasks.isEmpty()) return;
+
+        List<String> generatedTasks = new ArrayList<>();
+        for(LLMRoadmapResponseDto.PhaseDto phase : responseDto.getRoadmap()){
+            for(LLMRoadmapResponseDto.TaskDto task : phase.getTasks()){
+                generatedTasks.add(task.getTaskName());
+            }
+        }
+
+        for(String mandatoryTask : mandatoryTasks){
+            boolean isIncluded = generatedTasks.stream().anyMatch(taskName -> taskName.contains(mandatoryTask));
+            if(!isIncluded){
+                throw new IllegalStateException("로드맵 생성 중 검증 오류. 다시 시도");
+            }
         }
     }
 

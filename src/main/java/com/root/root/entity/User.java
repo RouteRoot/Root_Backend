@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -47,13 +49,40 @@ public class User {
 
     // 로드맵 생성 시 업데이트될 추가 정보들
     // 회원가입 시 입력 X, 로드맵 생성 시 입력
+    @Column
+    private String educationStatus;
+
+    @Column
+    private int grade;
+
+    @Column
     private String major;
+
+    @Column
     private String hope;
-    private String acquired;
-    private String status;
-    private int daily, weekly;
+
+    @Column
+    private boolean isMajorRelated;
+
+    @Column
+    private int career;
+
+    @Column
+    private int daily;
+
+    @Column
+    private int weekly;
+
+    @Column
     private String mylevel;
+
+    @Column
     private String target;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_acquired_certs", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "certification_name")
+    private List<String> acquired = new ArrayList<>();
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Roadmap roadmap;
