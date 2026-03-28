@@ -1,15 +1,14 @@
 package com.root.root.controller;
 
 import com.root.root.dto.LoginRequestDto;
+import com.root.root.dto.UserInfoDto;
 import com.root.root.dto.UserSignupDto;
 import com.root.root.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,5 +40,14 @@ public class UserController {
         response.put("message", "로그인 성공!");
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserInfoDto> getMyInfo(Authentication authentication){
+        String loginId = authentication.getName();
+
+        UserInfoDto userInfo = userService.getMyInfo(loginId);
+
+        return ResponseEntity.ok(userInfo);
     }
 }
