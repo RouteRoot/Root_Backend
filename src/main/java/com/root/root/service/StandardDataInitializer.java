@@ -39,18 +39,18 @@ public class StandardDataInitializer implements CommandLineRunner {
                     9. 응시하려는 종목이 속하는 동일 및 유사 직무분야에서 4년 이상 실무에 종사한 사람
                     10. 외국에서 동일한 종목에 해당하는 자격을 취득한 사람
                     """);
-        addSyllabus(exam1, "1과목: 소프트웨어 설계");
-        addSyllabus(exam1, "2과목: 소프트웨어 개발");
-        addSyllabus(exam1, "3과목: 데이터베이스 구축");
-        addSyllabus(exam1, "4과목: 프로그래밍 언어 활용");
-        addSyllabus(exam1, "5과목: 정보 시스템 구축 관리");
+        addSyllabus(exam1, "소프트웨어 설계");
+        addSyllabus(exam1, "소프트웨어 개발");
+        addSyllabus(exam1, "데이터베이스 구축");
+        addSyllabus(exam1, "프로그래밍 언어 활용");
+        addSyllabus(exam1, "정보 시스템 구축 관리");
         standardExamRepository.save(exam1);
 
         StandardExam exam2 = new StandardExam();
         exam2.setCertificationName("SQLD");
         exam2.setEligibilityCondition("제한 없음 (학력/경력 무관 누구나 응시 가능)");
-        addSyllabus(exam2, "1과목: 데이터 모델링의 이해");
-        addSyllabus(exam2, "2과목: SQL 기본 및 활용");
+        addSyllabus(exam2, "데이터 모델링의 이해");
+        addSyllabus(exam2, "SQL 기본 및 활용");
         standardExamRepository.save(exam2);
 
         StandardJob job1 = new StandardJob();
