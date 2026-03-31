@@ -29,7 +29,7 @@ public class ExamSchedule {
 
     @Column(length = 100)
     private String round;                // 회차 (예: 2026년 정기 기사 1회)
-
+    private String examType;
     private LocalDate registrationStart; // 접수 시작일
     private LocalDate registrationEnd;   // 접수 마감일
     private LocalDate examDate;          // 시험일
