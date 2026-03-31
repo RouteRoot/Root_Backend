@@ -23,8 +23,14 @@ public class ExamResponseDto {
     public static class ScheduleDto {
 
         private String round;
+        // 필기 응답
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-        private LocalDate examDate;
-        private Long dDay;
+        private LocalDate docExamStart;
+        private Long docDDay;
+
+        // 실기 응답
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private LocalDate pracExamStart;
+        private Long pracDDay;
     }
 }

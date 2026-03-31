@@ -76,24 +76,36 @@ public class ExamScheduleService {
     private void saveSchedule(ExamData examData, JsonNode item) {
         String round = item.path("implplannm").asText();
 
-        LocalDate regStart = parseDate(item.path("docregstartdt").asText()); // 필기원서접수시작일
-        LocalDate regEnd = parseDate(item.path("docregenddt").asText());     // 필기원서접수종료일
-        LocalDate examDate = parseDate(item.path("docexamstartdt").asText());// 필기시험시작일자
-        LocalDate resultDate = parseDate(item.path("docpassdt").asText());   // 필기시험발표일자
+        // 1. 필기 일정 파싱
+        LocalDate docRegStart = parseDate(item.path("docregstartdt").asText()); 
+        LocalDate docRegEnd = parseDate(item.path("docregenddt").asText());     
+        LocalDate docExamStart = parseDate(item.path("docexamstartdt").asText());
+        LocalDate docPassDate = parseDate(item.path("docpassdt").asText());   
 
-        // DB에 이미 같은 회차의 일정이 있는지 조회
+        // 2. 실기 일정 파싱
+        LocalDate pracRegStart = parseDate(item.path("pracregstartdt").asText()); 
+        LocalDate pracRegEnd = parseDate(item.path("pracregenddt").asText());     
+        LocalDate pracExamStart = parseDate(item.path("pracexamstartdt").asText());
+        LocalDate pracPassDate = parseDate(item.path("pracpassdt").asText());
+
         ExamSchedule schedule = examScheduleRepository.findByExamDataAndRound(examData, round)
                 .orElse(new ExamSchedule());
 
-        // 엔티티 값 세팅
         schedule.setExamData(examData);
         schedule.setRound(round);
-        schedule.setRegistrationStart(regStart);
-        schedule.setRegistrationEnd(regEnd);
-        schedule.setExamDate(examDate);
-        schedule.setResultDate(resultDate);
+        
+        // 필기 데이터 삽입
+        schedule.setDocRegStart(docRegStart);
+        schedule.setDocRegEnd(docRegEnd);
+        schedule.setDocExamStart(docExamStart);
+        schedule.setDocPassDate(docPassDate);
+        
+        // 실기 데이터 삽입
+        schedule.setPracRegStart(pracRegStart);
+        schedule.setPracRegEnd(pracRegEnd);
+        schedule.setPracExamStart(pracExamStart);
+        schedule.setPracPassDate(pracPassDate);
 
-        // 저장
         examScheduleRepository.save(schedule);
     }
 

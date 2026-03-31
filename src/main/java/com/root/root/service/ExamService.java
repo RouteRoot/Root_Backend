@@ -12,10 +12,6 @@ import com.root.root.dto.ExamResponseDto;
 import com.root.root.entity.ExamData;
 import com.root.root.repository.ExamDataRepository;
 
-
-
-
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,15 +31,24 @@ public class ExamService {
                 e.getExamName(),
                 e.getSchedules().stream()
                         .map(s -> {
-                            Long dDay = null;
-                            if (s.getExamDate() != null) {
-                                dDay = ChronoUnit.DAYS.between(LocalDate.now(), s.getExamDate());
+                            // 필기 D-Day 계산
+                            Long docDDay = null;
+                            if (s.getDocExamStart() != null) {
+                                docDDay = ChronoUnit.DAYS.between(LocalDate.now(), s.getDocExamStart());
                             }
                             
+                            // 실기 D-Day 계산
+                            Long pracDDay = null;
+                            if (s.getPracExamStart() != null) {
+                                pracDDay = ChronoUnit.DAYS.between(LocalDate.now(), s.getPracExamStart());
+                            }
+
                             return new ExamResponseDto.ScheduleDto(
                                     s.getRound(),
-                                    s.getExamDate(),
-                                    dDay
+                                    s.getDocExamStart(),
+                                    docDDay,
+                                    s.getPracExamStart(),
+                                    pracDDay
                             );
                         }).collect(Collectors.toList())
         )).collect(Collectors.toList());
