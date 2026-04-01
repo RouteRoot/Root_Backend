@@ -54,7 +54,7 @@ public class DashboardService {
 
             planProgress = DashboardResponseDto.PlanProgressDto.builder().totalPlanDays(tabDailyPlans.size()).completedPlanDays((int) tabDailyPlans.stream().filter(DailyPlan::isCompleted).count()).build();
 
-            LocalDate today = LocalDate.now();
+            LocalDate today = LocalDate.now(java.time.ZoneId.of("Asia/Seoul"));
             currentStudyPlan = tabDailyPlans.stream().filter(plan -> today.equals(plan.getStudyDate())).findFirst().map(plan -> DashboardResponseDto.CurrentStudyPlanDto.builder().weeklyPlanId(plan.getWeeklyPlan().getId()).weekNumber(plan.getWeeklyPlan().getWeekNumber()).weeklyGoal(plan.getWeeklyPlan().getWeeklyGoal()).dailyPlanId(plan.getId()).date(plan.getStudyDate()).topic(plan.getTopic()).isCompleted(plan.isCompleted()).build()).orElse(null);
         }
 

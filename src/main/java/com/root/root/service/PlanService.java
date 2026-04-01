@@ -45,7 +45,7 @@ public class PlanService {
         }
 
         // D-Day 역산 로직
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(java.time.ZoneId.of("Asia/Seoul"));
         long totalDays = ChronoUnit.DAYS.between(today, request.getExamDate());
 
         // 남은 주차 계산(올림 처리)
