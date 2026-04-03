@@ -42,4 +42,36 @@ public class RoadmapController {
         // JSON 반환(200)
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/tasks/{examTaskId}/complete")
+    public ResponseEntity<?> completeTask(@PathVariable Long examTaskId, Authentication authentication){
+        String loginId = authentication.getName();
+        try{
+            roadmapService.markTaskAsCompleted(loginId, examTaskId);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "자격증 취득 완료");
+            return ResponseEntity.ok(response);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
+        }
+    }
+
+    @PatchMapping("/tasks/{examTaskId}/cancel")
+    public ResponseEntity<?> cancelTaskCompletion(@PathVariable Long examTaskId, Authentication authentication){
+        String loginId = authentication.getName();
+        try{
+            roadmapService.cancelTaskCompletion(loginId, examTaskId);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "자격증 상태 변경 완료");
+            return ResponseEntity.ok(response);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
+        }
+    }
 }

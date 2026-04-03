@@ -1,6 +1,7 @@
 package com.root.root.service;
 
 import com.root.root.dto.PlanCreateRequestDto;
+import com.root.root.dto.PlanDetailResponseDto;
 import com.root.root.dto.PlanResponseDto;
 import com.root.root.dto.PlanTabResponseDto;
 import com.root.root.entity.DailyPlan;
@@ -165,6 +166,8 @@ public class PlanService {
                 // Cascade
                 savedPlans.add(weeklyPlanRepository.save(weeklyPlan));
             }
+            examTask.setStatus("IN_PROGRESS");
+
             weeklyPlanRepository.flush();
             return savedPlans;
         } catch (Exception e) {
@@ -174,7 +177,7 @@ public class PlanService {
     }
 
     @Transactional
-    public List<WeeklyPlan> getStudyPlan(String loginId, Long examTaskId){
+    public PlanDetailResponseDto getStudyPlan(String loginId, Long examTaskId){
         // 유저 검증
         User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
 
@@ -190,7 +193,27 @@ public class PlanService {
         if(weeklyPlans.isEmpty()){
             throw new IllegalArgumentException("해당 자격증에 대한 학습 플랜이 아직 생성되지 않았습니다.");
         }
-        return weeklyPlans;
+        return PlanDetailResponseDto.builder().status(examTask.getStatus()).weeklyPlans(weeklyPlans).build();
+    }
+
+    @Transactional
+    public void deleteStudyPlan(String loginId, Long examTaskId){
+        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+        ExamTask examTask = examTaskRepository.findById(examTaskId).orElseThrow(() -> new IllegalArgumentException("해당 자격증을 찾을 수 없습니다."));
+
+        validateTaskOwnership(examTask.getId(), loginId);
+
+        if(!"IN_PROGRESS".equals(examTask.getStatus())){
+            throw new IllegalArgumentException("이미 완료된 건 삭제 불가능");
+        }
+
+        List<WeeklyPlan> plansToDelete = weeklyPlanRepository.findByExamTaskIdOrderByWeekNumberAsc(examTaskId);
+        if(plansToDelete.isEmpty()){
+            throw new IllegalArgumentException("해당 플랜이 존재하지 않음");
+        }
+        weeklyPlanRepository.deleteAll(plansToDelete);
+
+        examTask.setStatus("NOT_STARTED");
     }
 
     @Transactional

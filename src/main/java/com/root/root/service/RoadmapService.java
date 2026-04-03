@@ -12,6 +12,7 @@ import com.root.root.repository.RoadmapRepository;
 import com.root.root.repository.StandardExamRepository;
 import com.root.root.repository.StandardJobRepository;
 import com.root.root.repository.UserRepository;
+import com.root.root.repository.ExamTaskRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class RoadmapService {
     private final LLMService llmService;
     private final RoadmapRepository roadmapRepository;
     private final UserRepository userRepository;
+    private final ExamTaskRepository examTaskRepository;
     private final ObjectMapper objectMapper;
 
     private final StandardJobRepository standardJobRepository;
@@ -210,11 +212,44 @@ public class RoadmapService {
     }
 
     @Transactional
+    public void markTaskAsCompleted(String loginId, Long taskId){
+        ExamTask examTask = getExamTaskWithAuthority(loginId, taskId);
+
+        if(!"IN_PROGRESS".equals(examTask.getStatus())){
+            throw new IllegalArgumentException("학습 플랜 생성 후 학습을 시작해야 완료 처리 가능함");
+        }
+
+        examTask.setStatus("COMPLETED");
+    }
+
+    @Transactional
+    public void cancelTaskCompletion(String loginId, Long taskId){
+        ExamTask examTask = getExamTaskWithAuthority(loginId, taskId);
+
+        if(!"COMPLETED".equals(examTask.getStatus())){
+            throw new IllegalArgumentException("취득 완료된 자격증만 상태를 되돌릴 수 있음");
+        }
+
+        examTask.setStatus("IN_PROGRESS");
+    }
+
+    @Transactional
     public RoadmapResponseDto getRoadmap(String loginId){
         User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
         // DB에서 로드맵 탐색
         Roadmap roadmap = roadmapRepository.findByUserId(user.getId()).orElseThrow(() -> new IllegalArgumentException("아직 생성된 로드맵이 없습니다."));
         // DTO 반환
         return new RoadmapResponseDto(roadmap, user);
+    }
+
+    // 유저 권한 및 자격증 확인 로직
+    private ExamTask getExamTaskWithAuthority(String loginId, Long taskId){
+        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+        ExamTask examTask = examTaskRepository.findById(taskId).orElseThrow(() -> new IllegalArgumentException("해당 자격증을 찾을 수 없습니다."));
+
+        if(!examTask.getPhase().getRoadmap().getUser().getId().equals(user.getId())){
+            throw new IllegalArgumentException("본인의 로드맵만 관리할 수 있습니다.");
+        }
+        return examTask;
     }
 }

@@ -1,6 +1,7 @@
 package com.root.root.controller;
 
 import com.root.root.dto.PlanCreateRequestDto;
+import com.root.root.dto.PlanDetailResponseDto;
 import com.root.root.dto.PlanResponseDto;
 import com.root.root.dto.PlanTabResponseDto;
 import com.root.root.entity.DailyPlan;
@@ -9,6 +10,7 @@ import com.root.root.entity.WeeklyPlan;
 import com.root.root.repository.ExamTaskRepository;
 import com.root.root.service.PlanService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,19 +41,36 @@ public class PlanController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @DeleteMapping("/tasks/{examTaskId}")
+    public ResponseEntity<?> deleteStudyPlan(@PathVariable Long examTaskId, Authentication authentication){
+        String loginId = authentication.getName();
+        try{
+            planService.deleteStudyPlan(loginId, examTaskId);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "학습 플랜 삭제 완료");
+            return ResponseEntity.ok(response);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
+        }
+    }
+
     @GetMapping("/{examTaskId}")
     public ResponseEntity<PlanResponseDto> getPlan(Authentication authentication, @PathVariable Long examTaskId){
         // 토큰에서 로그인 아이디 파싱
         String loginId = authentication.getName();
 
         // Service에서 엔티티 리스트 조회
-        List<WeeklyPlan> weeklyPlans = planService.getStudyPlan(loginId, examTaskId);
+        PlanDetailResponseDto detail = planService.getStudyPlan(loginId, examTaskId);
 
         // 타겟 자격증 이름 get
-        String taskName = weeklyPlans.get(0).getExamTask().getTaskName();
+        String taskName = detail.getWeeklyPlans().get(0).getExamTask().getTaskName();
 
         // DTO 변환
-        PlanResponseDto responseDto = convertToDto(weeklyPlans, examTaskId, taskName);
+        PlanResponseDto responseDto = convertToDto(detail.getWeeklyPlans(), examTaskId, taskName);
+        responseDto.setStatus(detail.getStatus());
 
         return ResponseEntity.ok(responseDto);
     }
