@@ -6,6 +6,8 @@ import com.root.root.entity.StudyStatus;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 public class PostResponseDto {
@@ -19,6 +21,7 @@ public class PostResponseDto {
     private StudyStatus studyStatus;
     private int viewCount;
     private LocalDateTime createdAt;
+    private List<String> imageUrls;
 
     public PostResponseDto(Post post) {
         this.postId = post.getId();
@@ -30,5 +33,9 @@ public class PostResponseDto {
         this.studyStatus = post.getStudyStatus();
         this.viewCount = post.getViewCount();
         this.createdAt = post.getCreatedAt();
+        this.imageUrls = post.getPostImages().stream()
+                .sorted((a, b) -> Integer.compare(a.getUploadOrder(), b.getUploadOrder()))
+                .map(img -> img.getImageUrl())
+                .collect(Collectors.toList());
     }
 }

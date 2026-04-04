@@ -57,7 +57,7 @@ public class PostController {
     // 게시글 작성
     // POST /api/posts
     @PostMapping
-    public ResponseEntity<?> createPost(@RequestBody PostRequestDto requestDto) {
+    public ResponseEntity<?> createPost(@ModelAttribute PostRequestDto requestDto) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(requestDto));
         } catch (IllegalArgumentException e) {
@@ -71,7 +71,7 @@ public class PostController {
     // PUT /api/posts/1
     @PutMapping("/{postId}")
     public ResponseEntity<?> updatePost(@PathVariable Long postId,
-                                        @RequestBody PostRequestDto requestDto) {
+                                        @ModelAttribute PostRequestDto requestDto) {
         try {
             return ResponseEntity.ok(postService.updatePost(postId, requestDto));
         } catch (IllegalArgumentException e) {
