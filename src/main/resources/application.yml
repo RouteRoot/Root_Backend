@@ -2,8 +2,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/root?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
-    username: root
-    password: justine1182
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -18,10 +18,10 @@ spring:
 
 llm:
   api:
-    key: "temporary_api_key_for_local_test"
+    key: ${LLM_API_KEY}
 
 jwt:
-  token: "your_temporary_secret_key_for_local_development_at_least_32_chars"
+  token: ${JWT_TOKEN}
 
 openapi:
-  service-key: "33452f32e23aa97dc7424bedcd2aad9e8da4a1591dd79fc88ecb8fcc4b0a521a"
+  service-key: ${OPENAPI_SERVICE_KEY}
