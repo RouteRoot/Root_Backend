@@ -29,6 +29,10 @@ public class ExamService {
         return exams.stream().map(e -> new ExamResponseDto(
                 e.getExamCode(),
                 e.getExamName(),
+                e.getExamGroup(),
+                e.getCategory(),
+                e.getOrganization(),
+                e.getDescription(),
                 e.getSchedules().stream()
                         .map(s -> {
                             // 필기 D-Day 계산
@@ -36,7 +40,7 @@ public class ExamService {
                             if (s.getDocExamStart() != null) {
                                 docDDay = ChronoUnit.DAYS.between(LocalDate.now(), s.getDocExamStart());
                             }
-                            
+
                             // 실기 D-Day 계산
                             Long pracDDay = null;
                             if (s.getPracExamStart() != null) {
