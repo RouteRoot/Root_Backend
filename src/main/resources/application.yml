@@ -27,4 +27,6 @@ jwt:
   token: ${JWT_TOKEN}
 
 file:
-  upload-dir: C:/images
+  #upload-dir: /home/ubuntu/images   # 배포
+  upload-dir: C:/images #로컬
+
