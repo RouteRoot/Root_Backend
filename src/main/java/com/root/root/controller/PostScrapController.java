@@ -14,7 +14,7 @@ public class PostScrapController {
     private final PostScrapService postScrapService;
 
     // 스크랩 토글
-    // POST /api/scraps?userId=1&postId=1
+    // POST /api/scraps?userId={userId}&postId={postId}
     @PostMapping
     public ResponseEntity<?> toggleScrap(@RequestParam Long userId,
                                          @RequestParam Long postId) {
@@ -29,7 +29,7 @@ public class PostScrapController {
     }
 
     // 스크랩 수 조회
-    // GET /api/scraps/count?postId=1
+    // GET /api/scraps/count?postId={postId}
     @GetMapping("/count")
     public ResponseEntity<?> getScrapCount(@RequestParam Long postId) {
         try {
@@ -40,7 +40,7 @@ public class PostScrapController {
     }
 
     // 내가 스크랩했는지 확인
-    // GET /api/scraps/check?userId=1&postId=1
+    // GET /api/scraps/check?userId={userId}&postId={postId}
     @GetMapping("/check")
     public ResponseEntity<?> isScrapped(@RequestParam Long userId,
                                         @RequestParam Long postId) {
@@ -52,7 +52,7 @@ public class PostScrapController {
     }
 
     // 내가 스크랩한 글 목록
-    // GET /api/scraps?userId=1
+    // GET /api/scraps?userId={userId}
     @GetMapping
     public ResponseEntity<?> getMyScraps(@RequestParam Long userId) {
         try {

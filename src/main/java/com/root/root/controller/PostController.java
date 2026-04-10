@@ -41,8 +41,21 @@ public class PostController {
         }
     }
 
+    // 내가 작성한 게시글 목록 조회
+    // GET /api/posts/my?userId={userId}
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyPosts(@RequestParam Long userId) {
+        try {
+            return ResponseEntity.ok(postService.getMyPosts(userId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
+        }
+    }
+
     // 게시글 상세 조회
-    // GET /api/posts/1
+    // GET /api/posts/{postId}
     @GetMapping("/{postId}")
     public ResponseEntity<?> getPost(@PathVariable Long postId) {
         try {
@@ -68,7 +81,7 @@ public class PostController {
     }
 
     // 게시글 수정
-    // PUT /api/posts/1
+    // PUT /api/posts/{postId}
     @PutMapping("/{postId}")
     public ResponseEntity<?> updatePost(@PathVariable Long postId,
                                         @ModelAttribute PostRequestDto requestDto) {
@@ -82,7 +95,7 @@ public class PostController {
     }
 
     // 게시글 삭제
-    // DELETE /api/posts/1
+    // DELETE /api/posts/{postId}
     @DeleteMapping("/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable Long postId) {
         try {

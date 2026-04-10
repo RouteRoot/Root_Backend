@@ -28,7 +28,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    // 스터디 게시판 내 모집 상태별 필터링 조회 (RECRUITING, CLOSED)
+    // 스터디 게시판 내 모집 상태별 필터링 조회 (RECRUITING, COMPLETED)
     @Transactional(readOnly = true)
     public List<PostResponseDto> getStudyPosts(StudyStatus studyStatus) {
         return postRepository.findByBoardTypeAndStudyStatus(BoardType.STUDY, studyStatus)
@@ -86,5 +86,17 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
         postRepository.delete(post);
+    }
+
+    // 내가 작성한 게시글 목록 조회
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getMyPosts(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+
+        return postRepository.findByAuthorId(userId)
+                .stream()
+                .map(PostResponseDto::new)
+                .collect(Collectors.toList());
     }
 }

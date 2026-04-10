@@ -11,4 +11,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByBoardType(BoardType boardType);
     List<Post> findByBoardTypeAndStudyStatus(BoardType boardType, StudyStatus studyStatus);
     List<Post> findByCategory(String category);
+    List<Post> findByAuthorId(Long userId);
 }
