@@ -1,14 +1,12 @@
 package com.root.root.controller;
 
 import com.root.root.dto.CommentRequestDto;
-import com.root.root.dto.CommentResponseDto;
 import com.root.root.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,6 +14,10 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
+
+    private String getLoginId() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
 
     // 특정 게시글의 댓글 목록 조회
     // GET /api/comments?postId={postId}
@@ -29,11 +31,12 @@ public class CommentController {
     }
 
     // 내가 작성한 댓글 목록 조회
-    // GET /api/comments/my?userId={userId}
+    // GET /api/comments/my
     @GetMapping("/my")
-    public ResponseEntity<?> getMyComments(@RequestParam Long userId) {
+    public ResponseEntity<?> getMyComments() {
         try {
-            return ResponseEntity.ok(commentService.getMyComments(userId));
+            String loginId = getLoginId();
+            return ResponseEntity.ok(commentService.getMyComments(loginId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
@@ -46,7 +49,8 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<?> createComment(@RequestBody CommentRequestDto requestDto) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(commentService.createComment(requestDto));
+            String loginId = getLoginId();
+            return ResponseEntity.status(HttpStatus.CREATED).body(commentService.createComment(loginId, requestDto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {

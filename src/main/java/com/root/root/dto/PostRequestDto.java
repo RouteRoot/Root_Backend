@@ -10,7 +10,6 @@ import lombok.Setter;
 public class PostRequestDto {
     private String title;
     private String content;
-    private Long userId;
     private BoardType boardType;
     private String category;
     private StudyStatus studyStatus;

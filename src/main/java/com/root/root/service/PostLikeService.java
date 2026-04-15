@@ -23,14 +23,14 @@ public class PostLikeService {
 
     // 좋아요 토글 (추가/취소)
     @Transactional
-    public boolean toggleLike(Long userId, Long postId) {
-        User user = userRepository.findById(userId)
+    public boolean toggleLike(String loginId, Long postId) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
-        return postLikeRepository.findByUserIdAndPostId(userId, postId)
+        return postLikeRepository.findByUserIdAndPostId(user.getId(), postId)
                 .map(like -> {
                     postLikeRepository.delete(like);
                     return false;
@@ -50,16 +50,19 @@ public class PostLikeService {
     }
 
     // 좋아요 여부 확인
-    public boolean isLiked(Long userId, Long postId) {
-        return postLikeRepository.findByUserIdAndPostId(userId, postId).isPresent();
+    public boolean isLiked(String loginId, Long postId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+
+        return postLikeRepository.findByUserIdAndPostId(user.getId(), postId).isPresent();
     }
 
     // 내가 좋아요한 게시글 ID 목록 조회
-    public List<Long> getMyLikes(Long userId) {
-        userRepository.findById(userId)
+    public List<Long> getMyLikes(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
 
-        return postLikeRepository.findByUserId(userId)
+        return postLikeRepository.findByUserId(user.getId())
                 .stream()
                 .map(like -> like.getPost().getId())
                 .collect(Collectors.toList());

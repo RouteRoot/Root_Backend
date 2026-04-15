@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,20 +20,28 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // 게시판 타입별 게시글 목록 조회 (FREE, STUDY, REVIEW)
+    // 게시판 타입별 게시글 목록 조회
     @Transactional(readOnly = true)
-    public List<PostResponseDto> getPosts(BoardType boardType) {
-        return postRepository.findByBoardType(boardType)
-                .stream()
-                .map(PostResponseDto::new)
-                .collect(Collectors.toList());
+    public List<PostResponseDto> getPosts(BoardType boardType, String sort) {
+        List<Post> posts = postRepository.findByBoardType(boardType);
+        return sortAndMap(posts, sort);
     }
 
-    // 스터디 게시판 내 모집 상태별 필터링 조회 (RECRUITING, COMPLETED)
+    // 스터디 게시판 내 모집 상태별 필터링 조회
     @Transactional(readOnly = true)
-    public List<PostResponseDto> getStudyPosts(StudyStatus studyStatus) {
-        return postRepository.findByBoardTypeAndStudyStatus(BoardType.STUDY, studyStatus)
+    public List<PostResponseDto> getStudyPosts(StudyStatus studyStatus, String sort) {
+        List<Post> posts = postRepository.findByBoardTypeAndStudyStatus(BoardType.STUDY, studyStatus);
+        return sortAndMap(posts, sort);
+    }
+
+    // 인기글 조회
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getPopularPosts(int limit) {
+        return postRepository.findAll()
                 .stream()
+                .sorted(Comparator.comparingInt(
+                        (Post p) -> p.getPostLikes().size()).reversed())
+                .limit(limit)
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
     }
@@ -43,16 +52,14 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
-        // 조회할 때마다 viewCount 1 증가
         post.incrementViewCount();
         return new PostResponseDto(post);
     }
 
     // 게시글 작성
-    // STUDY 게시판이 아닌 경우 studyStatus는 Post 생성자에서 자동으로 null 처리
     @Transactional
-    public PostResponseDto createPost(PostRequestDto requestDto) {
-        User user = userRepository.findById(requestDto.getUserId())
+    public PostResponseDto createPost(String loginId, PostRequestDto requestDto) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
 
         Post post = Post.builder()
@@ -90,12 +97,24 @@ public class PostService {
 
     // 내가 작성한 게시글 목록 조회
     @Transactional(readOnly = true)
-    public List<PostResponseDto> getMyPosts(Long userId) {
-        userRepository.findById(userId)
+    public List<PostResponseDto> getMyPosts(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
 
-        return postRepository.findByAuthorId(userId)
+        return postRepository.findByAuthorId(user.getId())
                 .stream()
+                .map(PostResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+    // 정렬 공통 처리 (인기순/최신순)
+    private List<PostResponseDto> sortAndMap(List<Post> posts, String sort) {
+        Comparator<Post> comparator = "popular".equalsIgnoreCase(sort)
+                ? Comparator.comparingInt((Post p) -> p.getPostLikes().size()).reversed()
+                : Comparator.comparing(Post::getCreatedAt).reversed();
+
+        return posts.stream()
+                .sorted(comparator)
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
     }

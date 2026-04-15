@@ -34,8 +34,8 @@ public class CommentService {
 
     // 댓글 작성
     @Transactional
-    public CommentResponseDto createComment(CommentRequestDto requestDto) {
-        User user = userRepository.findById(requestDto.getUserId())
+    public CommentResponseDto createComment(String loginId, CommentRequestDto requestDto) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
 
         Post post = postRepository.findById(requestDto.getPostId())
@@ -71,11 +71,11 @@ public class CommentService {
 
     // 내가 작성한 댓글 목록 조회
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getMyComments(Long userId) {
-        userRepository.findById(userId)
+    public List<CommentResponseDto> getMyComments(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
 
-        return commentRepository.findByAuthorId(userId)
+        return commentRepository.findByAuthorId(user.getId())
                 .stream()
                 .map(CommentResponseDto::new)
                 .collect(Collectors.toList());

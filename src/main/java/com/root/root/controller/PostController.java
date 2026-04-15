@@ -1,16 +1,14 @@
 package com.root.root.controller;
 
 import com.root.root.dto.PostRequestDto;
-import com.root.root.dto.PostResponseDto;
 import com.root.root.entity.BoardType;
 import com.root.root.entity.StudyStatus;
 import com.root.root.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,34 +17,53 @@ public class PostController {
 
     private final PostService postService;
 
+    private String getLoginId() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
     // 게시글 목록 조회
-    // GET /api/posts?boardType=FREE
+    // GET /api/posts?boardType=FREE&sort=latest
+    // GET /api/posts?boardType=FREE&sort=popular
     @GetMapping
-    public ResponseEntity<?> getPosts(@RequestParam BoardType boardType) {
+    public ResponseEntity<?> getPosts(@RequestParam BoardType boardType,
+                                      @RequestParam(defaultValue = "latest") String sort) {
         try {
-            return ResponseEntity.ok(postService.getPosts(boardType));
+            return ResponseEntity.ok(postService.getPosts(boardType, sort));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
 
     // 스터디 모집상태 필터링
-    // GET /api/posts/study?status=RECRUITING
+    // GET /api/posts/study?status=RECRUITING&sort=popular
     @GetMapping("/study")
-    public ResponseEntity<?> getStudyPosts(@RequestParam StudyStatus status) {
+    public ResponseEntity<?> getStudyPosts(@RequestParam StudyStatus status,
+                                           @RequestParam(defaultValue = "latest") String sort) {
         try {
-            return ResponseEntity.ok(postService.getStudyPosts(status));
+            return ResponseEntity.ok(postService.getStudyPosts(status, sort));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    // 인기글 조회
+    // GET /api/posts/popular?limit=3
+    @GetMapping("/popular")
+    public ResponseEntity<?> getPopularPosts(@RequestParam(defaultValue = "5") int limit) {
+        try {
+            return ResponseEntity.ok(postService.getPopularPosts(limit));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
 
     // 내가 작성한 게시글 목록 조회
-    // GET /api/posts/my?userId={userId}
+    // GET /api/posts/my
     @GetMapping("/my")
-    public ResponseEntity<?> getMyPosts(@RequestParam Long userId) {
+    public ResponseEntity<?> getMyPosts() {
         try {
-            return ResponseEntity.ok(postService.getMyPosts(userId));
+            String loginId = getLoginId();
+            return ResponseEntity.ok(postService.getMyPosts(loginId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
@@ -72,7 +89,8 @@ public class PostController {
     @PostMapping
     public ResponseEntity<?> createPost(@ModelAttribute PostRequestDto requestDto) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(requestDto));
+            String loginId = getLoginId();
+            return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(loginId, requestDto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
