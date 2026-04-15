@@ -23,7 +23,15 @@ public class PostService {
     // 게시판 타입별 게시글 목록 조회
     @Transactional(readOnly = true)
     public List<PostResponseDto> getPosts(BoardType boardType, String sort) {
-        List<Post> posts = postRepository.findByBoardType(boardType);
+        List<Post> posts;
+
+        // boardType이 파라미터로 넘어오지 않은 경우 전체 게시글 조회
+        if (boardType == null) {
+            posts = postRepository.findAll();
+        } else {
+            posts = postRepository.findByBoardType(boardType);
+        }
+
         return sortAndMap(posts, sort);
     }
 
@@ -39,8 +47,7 @@ public class PostService {
     public List<PostResponseDto> getPopularPosts(int limit) {
         return postRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparingInt(
-                        (Post p) -> p.getPostLikes().size()).reversed())
+                .sorted(Comparator.comparingInt(Post::getViewCount).reversed())
                 .limit(limit)
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
@@ -110,7 +117,7 @@ public class PostService {
     // 정렬 공통 처리 (인기순/최신순)
     private List<PostResponseDto> sortAndMap(List<Post> posts, String sort) {
         Comparator<Post> comparator = "popular".equalsIgnoreCase(sort)
-                ? Comparator.comparingInt((Post p) -> p.getPostLikes().size()).reversed()
+                ? Comparator.comparingInt(Post::getViewCount).reversed()
                 : Comparator.comparing(Post::getCreatedAt).reversed();
 
         return posts.stream()

@@ -25,7 +25,7 @@ public class PostController {
     // GET /api/posts?boardType=FREE&sort=latest
     // GET /api/posts?boardType=FREE&sort=popular
     @GetMapping
-    public ResponseEntity<?> getPosts(@RequestParam BoardType boardType,
+    public ResponseEntity<?> getPosts(@RequestParam(required = false) BoardType boardType,
                                       @RequestParam(defaultValue = "latest") String sort) {
         try {
             return ResponseEntity.ok(postService.getPosts(boardType, sort));
