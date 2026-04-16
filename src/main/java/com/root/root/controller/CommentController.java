@@ -1,14 +1,12 @@
 package com.root.root.controller;
 
 import com.root.root.dto.CommentRequestDto;
-import com.root.root.dto.CommentResponseDto;
 import com.root.root.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,12 +15,30 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    // 댓글 목록 조회
-    // GET /api/comments?postId=1
+    private String getLoginId() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    // 특정 게시글의 댓글 목록 조회
+    // GET /api/comments?postId={postId}
     @GetMapping
     public ResponseEntity<?> getComments(@RequestParam Long postId) {
         try {
             return ResponseEntity.ok(commentService.getComments(postId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    // 내가 작성한 댓글 목록 조회
+    // GET /api/comments/my
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyComments() {
+        try {
+            String loginId = getLoginId();
+            return ResponseEntity.ok(commentService.getMyComments(loginId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
@@ -33,7 +49,8 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<?> createComment(@RequestBody CommentRequestDto requestDto) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(commentService.createComment(requestDto));
+            String loginId = getLoginId();
+            return ResponseEntity.status(HttpStatus.CREATED).body(commentService.createComment(loginId, requestDto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
@@ -42,7 +59,7 @@ public class CommentController {
     }
 
     // 댓글 수정
-    // PUT /api/comments/1
+    // PUT /api/comments/{commentId}
     @PutMapping("/{commentId}")
     public ResponseEntity<?> updateComment(@PathVariable Long commentId,
                                            @RequestBody CommentRequestDto requestDto) {
@@ -56,7 +73,7 @@ public class CommentController {
     }
 
     // 댓글 삭제
-    // DELETE /api/comments/1
+    // DELETE /api/comments/{commentId}
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
         try {

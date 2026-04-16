@@ -18,6 +18,8 @@ public class PostResponseDto {
     private String category;
     private StudyStatus studyStatus;
     private int viewCount;
+    private int likeCount;
+    private int commentCount;
     private LocalDateTime createdAt;
 
     public PostResponseDto(Post post) {
@@ -29,6 +31,8 @@ public class PostResponseDto {
         this.category = post.getCategory();
         this.studyStatus = post.getStudyStatus();
         this.viewCount = post.getViewCount();
+        this.likeCount = post.getPostLikes().size();
+        this.commentCount = post.getComments().size();
         this.createdAt = post.getCreatedAt();
     }
 }

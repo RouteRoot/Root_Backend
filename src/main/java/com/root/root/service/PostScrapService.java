@@ -21,18 +21,16 @@ public class PostScrapService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    // 스크랩 토글 (추가/취소)
     @Transactional
-    public boolean toggleScrap(Long userId, Long postId) {
-        // 유저 검증
-        User user = userRepository.findById(userId)
+    public boolean toggleScrap(String loginId, Long postId) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
 
-        // 게시글 존재 여부 검증
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
-        // 이미 스크랩했으면 취소, 아니면 추가 (토글)
-        return postScrapRepository.findByUserIdAndPostId(userId, postId)
+        return postScrapRepository.findByUserIdAndPostId(user.getId(), postId)
                 .map(scrap -> {
                     postScrapRepository.delete(scrap);
                     return false;
@@ -46,17 +44,25 @@ public class PostScrapService {
                 });
     }
 
+    // 스크랩 수 조회
     public int getScrapCount(Long postId) {
         return postScrapRepository.countByPostId(postId);
     }
 
-    public boolean isScrapped(Long userId, Long postId) {
-        return postScrapRepository.findByUserIdAndPostId(userId, postId).isPresent();
+    // 스크랩 여부 확인
+    public boolean isScrapped(String loginId, Long postId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+
+        return postScrapRepository.findByUserIdAndPostId(user.getId(), postId).isPresent();
     }
 
-    public List<Long> getMyScraps(Long userId) {
-        // 스크랩한 게시글의 ID 목록만 반환
-        return postScrapRepository.findByUserId(userId)
+    // 내가 스크랩한 게시글 ID 목록 조회
+    public List<Long> getMyScraps(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+
+        return postScrapRepository.findByUserId(user.getId())
                 .stream()
                 .map(scrap -> scrap.getPost().getId())
                 .collect(Collectors.toList());
