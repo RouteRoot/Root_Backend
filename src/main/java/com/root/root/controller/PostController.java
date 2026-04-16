@@ -5,6 +5,7 @@ import com.root.root.entity.BoardType;
 import com.root.root.entity.StudyStatus;
 import com.root.root.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,21 +22,18 @@ public class PostController {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
-    // 게시글 목록 조회
-    // GET /api/posts?boardType=FREE&sort=latest
-    // GET /api/posts?boardType=FREE&sort=popular
     @GetMapping
     public ResponseEntity<?> getPosts(@RequestParam(required = false) BoardType boardType,
-                                      @RequestParam(defaultValue = "latest") String sort) {
+                                      @RequestParam(defaultValue = "latest") String sort,
+                                      @RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "6") int size) {
         try {
-            return ResponseEntity.ok(postService.getPosts(boardType, sort));
+            return ResponseEntity.ok(postService.getPosts(boardType, sort, page, size));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
 
-    // 스터디 모집상태 필터링
-    // GET /api/posts/study?status=RECRUITING&sort=popular
     @GetMapping("/study")
     public ResponseEntity<?> getStudyPosts(@RequestParam StudyStatus status,
                                            @RequestParam(defaultValue = "latest") String sort) {
@@ -46,8 +44,6 @@ public class PostController {
         }
     }
 
-    // 인기글 조회
-    // GET /api/posts/popular?limit=3
     @GetMapping("/popular")
     public ResponseEntity<?> getPopularPosts(@RequestParam(defaultValue = "5") int limit) {
         try {
@@ -57,8 +53,6 @@ public class PostController {
         }
     }
 
-    // 내가 작성한 게시글 목록 조회
-    // GET /api/posts/my
     @GetMapping("/my")
     public ResponseEntity<?> getMyPosts() {
         try {
@@ -71,8 +65,6 @@ public class PostController {
         }
     }
 
-    // 게시글 상세 조회
-    // GET /api/posts/{postId}
     @GetMapping("/{postId}")
     public ResponseEntity<?> getPost(@PathVariable Long postId) {
         try {
@@ -84,8 +76,6 @@ public class PostController {
         }
     }
 
-    // 게시글 작성
-    // POST /api/posts
     @PostMapping
     public ResponseEntity<?> createPost(@ModelAttribute PostRequestDto requestDto) {
         try {
@@ -98,8 +88,6 @@ public class PostController {
         }
     }
 
-    // 게시글 수정
-    // PUT /api/posts/{postId}
     @PutMapping("/{postId}")
     public ResponseEntity<?> updatePost(@PathVariable Long postId,
                                         @ModelAttribute PostRequestDto requestDto) {
@@ -112,8 +100,6 @@ public class PostController {
         }
     }
 
-    // 게시글 삭제
-    // DELETE /api/posts/{postId}
     @DeleteMapping("/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable Long postId) {
         try {
