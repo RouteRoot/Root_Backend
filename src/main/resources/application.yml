@@ -18,6 +18,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        connection:
+          charSet: UTF-8
+        sql_exception_helper: DEBUG
 
 llm:
   api:
@@ -28,3 +31,6 @@ jwt:
 
 file:
   upload-dir: ${FILE_UPLOAD_DIR}
+  
+openapi:
+  service-key: ${OPENAPI_SERVICE_KEY}

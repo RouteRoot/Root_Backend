@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/root?serverTimezone=Asia/Seoul
+    username: root
+    password: justine1182
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+llm:
+  api:
+    key: "temporary_api_key_for_local_test"
+
+jwt:
+  token: "your_temporary_secret_key_for_local_development_at_least_32_chars"
+
+openapi:
+  service-key: "33452f32e23aa97dc7424bedcd2aad9e8da4a1591dd79fc88ecb8fcc4b0a521a"
