@@ -57,4 +57,33 @@ public class ExamService {
                         }).collect(Collectors.toList())
         )).collect(Collectors.toList());
     }
+
+    @Transactional
+    public ExamData saveOrUpdateExam(ExamData examData) {
+        if (examData.getIsActive() == null) {
+            examData.setIsActive(true);
+        }
+        return examDataRepository.save(examData);
+    }
+
+    //특정 필드(설명, 카테고리 등)만 부분 수정
+    @Transactional
+    public ExamData patchExam(String examCode, ExamData updateInfo) {
+        ExamData exam = examDataRepository.findById(examCode)
+                .orElseThrow(() -> new RuntimeException("해당 자격증을 찾을 수 없습니다: " + examCode));
+
+        if (updateInfo.getExamName() != null) exam.setExamName(updateInfo.getExamName());
+        if (updateInfo.getCategory() != null) exam.setCategory(updateInfo.getCategory());
+        if (updateInfo.getExamGroup() != null) exam.setExamGroup(updateInfo.getExamGroup());
+        if (updateInfo.getOrganization() != null) exam.setOrganization(updateInfo.getOrganization());
+        if (updateInfo.getDescription() != null) exam.setDescription(updateInfo.getDescription());
+
+        return exam;
+    }
+
+    //자격증 정보 삭제
+    @Transactional
+    public void deleteExam(String examCode) {
+        examDataRepository.deleteById(examCode);
+    }
 }
