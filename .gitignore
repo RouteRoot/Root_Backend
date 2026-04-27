@@ -22,6 +22,7 @@ build/
 *.iml
 *.ipr
 out/
+bin/
 .classpath
 .project
 .settings/
