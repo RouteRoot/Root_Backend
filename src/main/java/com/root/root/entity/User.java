@@ -79,6 +79,9 @@ public class User {
     @Column
     private String target;
 
+    @Column(columnDefinition = "TEXT")
+    private String personalStory;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_acquired_certs", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "certification_name")
