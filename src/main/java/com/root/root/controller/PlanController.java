@@ -1,9 +1,6 @@
 package com.root.root.controller;
 
-import com.root.root.dto.PlanCreateRequestDto;
-import com.root.root.dto.PlanDetailResponseDto;
-import com.root.root.dto.PlanResponseDto;
-import com.root.root.dto.PlanTabResponseDto;
+import com.root.root.dto.*;
 import com.root.root.entity.DailyPlan;
 import com.root.root.entity.ExamTask;
 import com.root.root.entity.WeeklyPlan;
@@ -87,6 +84,19 @@ public class PlanController {
         response.put("dailyPlanId", dailyPlanId);
         response.put("isCompleted", updatedStatus);
         response.put("message", updatedStatus ? "학습 완료" : "학습 완료 취소");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/daily/migrate")
+    public ResponseEntity<Map<String, Object>> migrateDailyPlan(Authentication authentication, @RequestBody PlanMigrateRequestDto request){
+        String loginId = authentication.getName();
+
+        planService.migrateDailyPlan(loginId, request.getDailyPlanId(), request.getTargetDate());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "학습 플랜이 성공적으로 이동/병합되었습니다.");
+        response.put("targetDate", request.getTargetDate().toString());
 
         return ResponseEntity.ok(response);
     }

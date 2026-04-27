@@ -256,6 +256,33 @@ public class PlanService {
     }
 
     @Transactional
+    public void migrateDailyPlan(String loginId, Long dailyPlanId, LocalDate targetDate){
+        DailyPlan sourcePlan = dailyPlanRepository.findById(dailyPlanId).orElseThrow(() -> new IllegalArgumentException("해당 학습 플랜을 찾을 수 없습니다."));
+        Long examTaskId = sourcePlan.getWeeklyPlan().getExamTask().getId();
+        validateTaskOwnership(examTaskId, loginId);
+
+        LocalDate today = LocalDate.now(java.time.ZoneId.of("Asia/Seoul"));
+        if(targetDate.isBefore(today)){
+            throw new IllegalArgumentException("과거 날짜로는 플랜을 이동할 수 없습니다.");
+        }
+
+        DailyPlan targetPlan = dailyPlanRepository.findByTaskAndDate(examTaskId, targetDate).orElse(null);
+
+        if(targetPlan == null){
+            sourcePlan.setStudyDate(targetDate);
+            sourcePlan.setRest(false);
+        }else{
+            String mergedDescription = targetPlan.getDescription() + "\n\n[밀린 학습] : " + sourcePlan.getStudyDate() + "에 수행하지 못한 [" + sourcePlan.getTopic() + "] 수행하기";
+
+            targetPlan.setDescription(mergedDescription);
+            targetPlan.setEstimatedHours(targetPlan.getEstimatedHours() + sourcePlan.getEstimatedHours());
+            targetPlan.setRest(false);
+
+            dailyPlanRepository.delete(sourcePlan);
+        }
+    }
+
+    @Transactional
     public boolean togglePlanCompletion(String loginId, Long dailyPlanId){
         // 유저 검증
         User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
