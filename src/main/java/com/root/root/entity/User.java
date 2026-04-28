@@ -67,11 +67,11 @@ public class User {
     @Column
     private int career;
 
-    @Column
-    private int daily;
+    //@Column
+    //private int daily;
 
-    @Column
-    private int weekly;
+    //@Column
+    //private int weekly;
 
     @Column
     private String mylevel;
