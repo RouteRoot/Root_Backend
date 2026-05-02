@@ -33,11 +33,11 @@ public class Comment {
         this.content = content;
         this.author = author;
         this.post = post;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
     }
 
     public void update(String content) {
         this.content = content;
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
     }
 }

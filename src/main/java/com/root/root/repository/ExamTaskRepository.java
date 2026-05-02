@@ -21,7 +21,7 @@ public interface ExamTaskRepository extends JpaRepository<ExamTask, Long> {
            SELECT e FROM ExamTask e
            JOIN e.phase p JOIN p.roadmap r
            WHERE r.user.loginId = :loginId
-           AND EXISTS (SELECT 1 FROM WeeklyPlan w WHERE w.examTask = e)
+           AND e.status = 'IN_PROGRESS'
            ORDER BY e.id ASC
            """)
     List<ExamTask> findTasksWithPlansByUserLoginId(@Param("loginId") String loginId);

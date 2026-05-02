@@ -12,6 +12,7 @@ import com.root.root.repository.RoadmapRepository;
 import com.root.root.repository.StandardExamRepository;
 import com.root.root.repository.StandardJobRepository;
 import com.root.root.repository.UserRepository;
+import com.root.root.repository.ExamTaskRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class RoadmapService {
     private final LLMService llmService;
     private final RoadmapRepository roadmapRepository;
     private final UserRepository userRepository;
+    private final ExamTaskRepository examTaskRepository;
     private final ObjectMapper objectMapper;
 
     private final StandardJobRepository standardJobRepository;
@@ -50,16 +52,19 @@ public class RoadmapService {
         user.setHope(request.getHope());
         user.setMajorRelated(request.isMajorRelated());
         user.setCareer(request.getCareer());
-        user.setDaily(request.getDaily());
-        user.setWeekly(request.getWeekly());
+        //user.setDaily(request.getDaily());
+        //user.setWeekly(request.getWeekly());
         user.setMylevel(request.getMylevel());
         user.setTarget(request.getTarget());
+        user.setPersonalStory(request.getPersonalStory());
         user.setOnboardingCompleted(true);
 
         user.getAcquired().clear();
         if(request.getAcquired() != null && !request.getAcquired().isEmpty()){
             user.getAcquired().addAll(request.getAcquired());
         }
+
+        String personalStory = request.getPersonalStory() != null && !request.getPersonalStory().trim().isEmpty() ? request.getPersonalStory() : "특별한 약점이나 고민은 없으며, 일반적이고 안정적인 흐름에 따라 커리어를 설계하길 원함.";
 
         StringBuilder standardDataPrompt = new StringBuilder();
         List<String> mandatoryTasks = new ArrayList<>();
@@ -89,9 +94,11 @@ public class RoadmapService {
                         관련 전공 여부: %b
                         실무 경력: %d년
                         기취득 스펙: %s
-                        확보 가능한 학습 시간: 일간 %d시간, 주간(주말 포함) %d시간
                         실력 자가 진단: %s
                         선호 기업 형태: %s
+                        
+                        [User's Personal Story (강점/약점/고민)]
+                        "%s"
                         
                         %s
                         
@@ -111,7 +118,8 @@ public class RoadmapService {
                         12. 로드맵은 사용자가 지치지 않도록 Phase 1(기초), Phase 2(심화), Phase 3(고급)의 3단계로 나누어 구성하라.(Phase 1: 성공 확률이 가장 높은 기초 경쟁력 확보 단계. Phase 2: 직무 직접 경쟁력 강화 단계. Phase 3: 상위 기업 안정권 진입 단계.)
                         13. 각 Phase는 기본적으로 3개의 자격증 또는 어학 시험을 포함해야 한다. 하지만 해당 직무 분야에서 현실적으로 선택 가능한 공인 자격증 종류가 적거나, 사용자의 현재 조건에서 합격 가능성이 충분한 시험이 3개 미만일 경우에 한해 1-2개만 포함할 수 있다. 단순히 개수를 맞추기 위해 직무와 무관하거나 전략적으로 의미 없는 자격증을 추가하는 것은 금지한다. 전체 로드맵에 걸쳐 중복 없이 적절한 시점에 분산 배치하는 것이 최우선이다. 
                         14. 자격증 선택 시 다음을 내부적으로 비교 검토하라.(출력 금지) 현재 조건에서의 상대적 합격 가능성, 준비 부담도, 선행 자격증이 이후 시험에 주는 긍정 효과, 전체 경로의 누적 학습 피로도. 단순 나열이 아니라 가장 안정적인 순서를 선택하라.
-                        15.  **[Critical Rule]** 너의 답변은 시스템이 곧바로 파싱해야 하므로 반드시 아래의 JSON 규격으로만 출력해야 한다. 마크다운 기호(```json), 인삿말, 부가 설명 등은 절대 포함하지 말고 오직 JSON 텍스트만 반환하라. 스마트 따옴표 금지, 순자는 문자열이 아닌 정수형으로 출력, JSON 외 추가 텍스트 절대 금지.
+                        15. 사용자가 작성한 [User's Personal Story]를 철저하게 분석하여 description 작성 시 사용자의 고민을 덜어주고 방향성을 제시하는 맞춤형 멘토링 코멘트를 자연스럽게 포함하라. 
+                        16.  **[Critical Rule]** 너의 답변은 시스템이 곧바로 파싱해야 하므로 반드시 아래의 JSON 규격으로만 출력해야 한다. 마크다운 기호(```json), 인삿말, 부가 설명 등은 절대 포함하지 말고 오직 JSON 텍스트만 반환하라. 스마트 따옴표 금지, 순자는 문자열이 아닌 정수형으로 출력, JSON 외 추가 텍스트 절대 금지.
                         
                         [Output JSON Format]
                         {
@@ -130,7 +138,7 @@ public class RoadmapService {
                             ]
                         }
                         """,
-                request.getEducationStatus(), request.getGrade(), request.getMajor(), request.getHope(), request.isMajorRelated(), request.getCareer(), (request.getAcquired() != null && !request.getAcquired().isEmpty()) ? request.getAcquired().toString() : "없음", request.getDaily(), request.getWeekly(), request.getMylevel(), request.getTarget(), standardDataPrompt.toString()
+                request.getEducationStatus(), request.getGrade(), request.getMajor(), request.getHope(), request.isMajorRelated(), request.getCareer(), (request.getAcquired() != null && !request.getAcquired().isEmpty()) ? request.getAcquired().toString() : "없음", request.getMylevel(), request.getTarget(), personalStory, standardDataPrompt.toString()
         );
 
         // Auto-Retry 로직(3회)
@@ -210,11 +218,44 @@ public class RoadmapService {
     }
 
     @Transactional
+    public void markTaskAsCompleted(String loginId, Long taskId){
+        ExamTask examTask = getExamTaskWithAuthority(loginId, taskId);
+
+        if(!"IN_PROGRESS".equals(examTask.getStatus())){
+            throw new IllegalArgumentException("학습 플랜 생성 후 학습을 시작해야 완료 처리 가능함");
+        }
+
+        examTask.setStatus("COMPLETED");
+    }
+
+    @Transactional
+    public void cancelTaskCompletion(String loginId, Long taskId){
+        ExamTask examTask = getExamTaskWithAuthority(loginId, taskId);
+
+        if(!"COMPLETED".equals(examTask.getStatus())){
+            throw new IllegalArgumentException("취득 완료된 자격증만 상태를 되돌릴 수 있음");
+        }
+
+        examTask.setStatus("IN_PROGRESS");
+    }
+
+    @Transactional
     public RoadmapResponseDto getRoadmap(String loginId){
         User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
         // DB에서 로드맵 탐색
         Roadmap roadmap = roadmapRepository.findByUserId(user.getId()).orElseThrow(() -> new IllegalArgumentException("아직 생성된 로드맵이 없습니다."));
         // DTO 반환
         return new RoadmapResponseDto(roadmap, user);
+    }
+
+    // 유저 권한 및 자격증 확인 로직
+    private ExamTask getExamTaskWithAuthority(String loginId, Long taskId){
+        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+        ExamTask examTask = examTaskRepository.findById(taskId).orElseThrow(() -> new IllegalArgumentException("해당 자격증을 찾을 수 없습니다."));
+
+        if(!examTask.getPhase().getRoadmap().getUser().getId().equals(user.getId())){
+            throw new IllegalArgumentException("본인의 로드맵만 관리할 수 있습니다.");
+        }
+        return examTask;
     }
 }

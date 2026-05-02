@@ -14,6 +14,7 @@ public class PlanResponseDto {
     private Long examTaskId;
     private String taskName;
     private int totalWeeks;
+    private String status;
     private List<WeeklyPlanDto> weeklyPlans;
 
     @Getter

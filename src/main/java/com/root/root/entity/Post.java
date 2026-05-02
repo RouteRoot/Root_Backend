@@ -58,7 +58,7 @@ public class Post {
         this.boardType = boardType;
         this.category = category;
         this.studyStatus = (boardType == BoardType.STUDY) ? studyStatus : null;
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
     }
 
     public void incrementViewCount() {
@@ -72,6 +72,6 @@ public class Post {
         if (this.boardType == BoardType.STUDY) {
             this.studyStatus = studyStatus;
         }
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul"));
     }
 }

@@ -21,7 +21,4 @@ public interface WeeklyPlanRepository extends JpaRepository<WeeklyPlan, Long> {
            ORDER BY w.weekNumber ASC
            """)
     List<WeeklyPlan> findByExamTaskIdOrderByWeekNumberAsc(@Param("examTaskId") Long examTaskId);
-
-    // 플랜 삭제 기능
-    // void deleteByExamTaskId(Long examTaskId);
 }
