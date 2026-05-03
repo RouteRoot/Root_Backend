@@ -84,6 +84,10 @@ public class ExamService {
     //자격증 정보 삭제
     @Transactional
     public void deleteExam(String examCode) {
+        // 삭제 전 데이터 존재 여부 검증
+        if (!examDataRepository.existsById(examCode)) {
+            throw new RuntimeException("삭제하려는 자격증이 존재하지 않습니다: " + examCode);
+        }
         examDataRepository.deleteById(examCode);
     }
 }

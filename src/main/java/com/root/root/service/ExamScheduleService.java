@@ -139,4 +139,41 @@ public class ExamScheduleService {
         
         log.info("전체 자격증 일정 수집 완료! 총 {}개 조회 시도됨", successCount);
     }
+
+    // 수동 데이터 관리
+    @Transactional
+    public ExamSchedule addManualSchedule(String examCode, ExamSchedule scheduleData) {
+        ExamData exam = examDataRepository.findById(examCode)
+                .orElseThrow(() -> new RuntimeException("해당 자격증 정보를 찾을 수 없습니다: " + examCode));
+
+        scheduleData.setExamData(exam);
+        return examScheduleRepository.save(scheduleData);
+    }
+
+    @Transactional
+    public ExamSchedule patchSchedule(Long scheduleId, ExamSchedule updateInfo) {
+        ExamSchedule schedule = examScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("해당 시험 일정을 찾을 수 없습니다: " + scheduleId));
+
+        if (updateInfo.getRound() != null) schedule.setRound(updateInfo.getRound());
+        if (updateInfo.getDocRegStart() != null) schedule.setDocRegStart(updateInfo.getDocRegStart());
+        if (updateInfo.getDocRegEnd() != null) schedule.setDocRegEnd(updateInfo.getDocRegEnd());
+        if (updateInfo.getDocExamStart() != null) schedule.setDocExamStart(updateInfo.getDocExamStart());
+        if (updateInfo.getDocPassDate() != null) schedule.setDocPassDate(updateInfo.getDocPassDate());
+        
+        if (updateInfo.getPracRegStart() != null) schedule.setPracRegStart(updateInfo.getPracRegStart());
+        if (updateInfo.getPracRegEnd() != null) schedule.setPracRegEnd(updateInfo.getPracRegEnd());
+        if (updateInfo.getPracExamStart() != null) schedule.setPracExamStart(updateInfo.getPracExamStart());
+        if (updateInfo.getPracPassDate() != null) schedule.setPracPassDate(updateInfo.getPracPassDate());
+
+        return schedule; 
+    }
+
+    @Transactional
+    public void deleteSchedule(Long scheduleId) {
+        if (!examScheduleRepository.existsById(scheduleId)) {
+            throw new RuntimeException("삭제하려는 일정이 존재하지 않습니다: " + scheduleId);
+        }
+        examScheduleRepository.deleteById(scheduleId);
+    }
 }

@@ -3,10 +3,19 @@ package com.root.root.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.root.root.dto.ExamResponseDto;
 import com.root.root.entity.ExamData;
+import com.root.root.entity.ExamSchedule;
 import com.root.root.repository.ExamDataRepository;
 import com.root.root.service.ExamDataBatchService;
 import com.root.root.service.ExamScheduleService;
@@ -49,6 +58,8 @@ public class ExamController {
     // 2. 수동 데이터 관리
     // ==================
 
+    //자격증 관리
+    
     //자격증 정보 수동 생성 및 전체 수정
     @PostMapping("/manual")
     public ResponseEntity<ExamData> createExamManual(@RequestBody ExamData examData) {
@@ -70,6 +81,30 @@ public class ExamController {
         return ResponseEntity.ok("자격증 삭제 완료: " + examCode);
     }
 
+    //자격증 일정 관리
+
+    //자격증 일정 정보 수동 생성 및 전체 수정
+    @PostMapping("/{examCode}/schedules")
+    public ResponseEntity<ExamSchedule> addSchedule(
+            @PathVariable String examCode, 
+            @RequestBody ExamSchedule scheduleData) {
+        return ResponseEntity.ok(examScheduleService.addManualSchedule(examCode, scheduleData));
+    }
+
+    // 특정 일정 정보 수정 (ID 기준)
+    @PatchMapping("/schedules/{scheduleId}")
+    public ResponseEntity<ExamSchedule> updateSchedule(
+            @PathVariable Long scheduleId, 
+            @RequestBody ExamSchedule updateInfo) {
+        return ResponseEntity.ok(examScheduleService.patchSchedule(scheduleId, updateInfo));
+    }
+
+    // 특정 일정 삭제
+    @DeleteMapping("/schedules/{scheduleId}")
+    public ResponseEntity<String> deleteSchedule(@PathVariable Long scheduleId) {
+        examScheduleService.deleteSchedule(scheduleId);
+        return ResponseEntity.ok("시험 일정 삭제 성공 (ID: " + scheduleId + ")");
+    }
 
     // 3. 외부 API 연동 및 일정 수집
     // ============================
