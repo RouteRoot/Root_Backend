@@ -29,6 +29,7 @@ public class ExamData {
 
     private String organization; // 주관 기관
 
+    @Column(columnDefinition = "TEXT")
     private String description; // 시험 설명
 
     private String officialUrl; // 공식 링크
