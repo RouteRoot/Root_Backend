@@ -38,6 +38,10 @@ public class ExamData {
     @Column(nullable = false)
     private Boolean isActive = true; // 활성화 여부
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Long viewCount = 0L;
+
     @OneToMany(mappedBy = "examData", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ExamSchedule> schedules = new ArrayList<>();
