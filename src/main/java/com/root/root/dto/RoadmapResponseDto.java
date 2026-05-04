@@ -20,8 +20,8 @@ public class RoadmapResponseDto {
     public RoadmapResponseDto(Roadmap roadmap, User user){
         this.roadmapId = roadmap.getId();
         this.phases = roadmap.getPhases().stream().map(PhaseDto::new).collect(Collectors.toList());
-        this.daily = user.getDaily();
-        this.weekly = user.getWeekly();
+        //this.daily = user.getDaily();
+        //this.weekly = user.getWeekly();
         this.mylevel = user.getMylevel();
     }
 

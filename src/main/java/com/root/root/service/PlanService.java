@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -268,18 +269,31 @@ public class PlanService {
 
         DailyPlan targetPlan = dailyPlanRepository.findByTaskAndDate(examTaskId, targetDate).orElse(null);
 
+        String formattedTargetDate = targetDate.format(DateTimeFormatter.ofPattern("M월 d일"));
+
         if(targetPlan == null){
-            sourcePlan.setStudyDate(targetDate);
-            sourcePlan.setRest(false);
+            DailyPlan newPlan = new DailyPlan();
+            newPlan.setWeeklyPlan(sourcePlan.getWeeklyPlan());
+            newPlan.setDayNumber(sourcePlan.getDayNumber());
+            newPlan.setStudyDate(targetDate);
+            newPlan.setTopic(sourcePlan.getTopic());
+            newPlan.setDescription(sourcePlan.getDescription());
+            newPlan.setEstimatedHours(sourcePlan.getEstimatedHours());
+            newPlan.setRest(false);
+            newPlan.setCompleted(false);
+
+            dailyPlanRepository.save(newPlan);
         }else{
             String mergedDescription = targetPlan.getDescription() + "\n\n[밀린 학습] : " + sourcePlan.getStudyDate() + "에 수행하지 못한 [" + sourcePlan.getTopic() + "] 수행하기";
 
             targetPlan.setDescription(mergedDescription);
             targetPlan.setEstimatedHours(targetPlan.getEstimatedHours() + sourcePlan.getEstimatedHours());
             targetPlan.setRest(false);
-
-            dailyPlanRepository.delete(sourcePlan);
         }
+
+        String originalDesc = sourcePlan.getDescription() != null ? sourcePlan.getDescription() : "";
+        sourcePlan.setDescription("[" + formattedTargetDate + "로 미뤄짐]\n" + originalDesc);
+        sourcePlan.setCompleted(true);
     }
 
     @Transactional
