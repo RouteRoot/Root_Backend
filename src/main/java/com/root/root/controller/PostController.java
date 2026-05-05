@@ -26,9 +26,10 @@ public class PostController {
     public ResponseEntity<?> getPosts(@RequestParam(required = false) BoardType boardType,
                                       @RequestParam(defaultValue = "latest") String sort,
                                       @RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "6") int size) {
+                                      @RequestParam(defaultValue = "6") int size,
+                                      @RequestParam(required = false) String keyword) {
         try {
-            return ResponseEntity.ok(postService.getPosts(boardType, sort, page, size));
+            return ResponseEntity.ok(postService.getPosts(boardType, sort, page, size, keyword));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }

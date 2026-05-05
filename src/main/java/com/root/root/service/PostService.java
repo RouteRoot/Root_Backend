@@ -25,11 +25,16 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> getPosts(BoardType boardType, String sort, int page, int size) {
+    public Page<PostResponseDto> getPosts(BoardType boardType, String sort, int page, int size, String keyword) {
         Sort sorting = "popular".equalsIgnoreCase(sort)
                 ? Sort.by("viewCount").descending()
                 : Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page, size, sorting);
+
+        if (keyword != null && !keyword.isBlank()) {
+            return postRepository.searchByKeyword(boardType, keyword, pageable)
+                    .map(PostResponseDto::new);
+        }
 
         if (boardType == null) {
             return postRepository.findAll(pageable).map(PostResponseDto::new);
