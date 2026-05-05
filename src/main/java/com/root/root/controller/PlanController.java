@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/plans")
@@ -106,6 +107,23 @@ public class PlanController {
         String loginId = authentication.getName();
         List<PlanTabResponseDto> tabs = planService.getMyPlanTabs(loginId);
         return ResponseEntity.ok(tabs);
+    }
+
+    @PostMapping("/redistribute")
+    public ResponseEntity<List<WeeklyPlanResponseDto>> redistributeStudyPlan(Authentication authentication, @RequestBody PlanRedistributeRequestDto requestDto){
+        String loginId = authentication.getName();
+        List<WeeklyPlan> redistributedPlans = planService.redistributePlan(loginId, requestDto);
+        List<WeeklyPlanResponseDto> responseBody = redistributedPlans.stream().map(WeeklyPlanResponseDto::fromEntity).collect(Collectors.toList());
+        return ResponseEntity.ok(responseBody);
+    }
+
+    @GetMapping("/settings/{examTaskId}")
+    public ResponseEntity<PlanSettingsResponseDto> getPlanSettings(
+            Authentication authentication,
+            @PathVariable Long examTaskId) {
+        String loginId = authentication.getName();
+        PlanSettingsResponseDto response = planService.getPlanSettings(loginId, examTaskId);
+        return ResponseEntity.ok(response);
     }
 
     private PlanResponseDto convertToDto(List<WeeklyPlan> savedPlans, Long examTaskId, String taskName){
