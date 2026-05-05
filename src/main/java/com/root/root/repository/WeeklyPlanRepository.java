@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface WeeklyPlanRepository extends JpaRepository<WeeklyPlan, Long> {
@@ -21,4 +22,6 @@ public interface WeeklyPlanRepository extends JpaRepository<WeeklyPlan, Long> {
            ORDER BY w.weekNumber ASC
            """)
     List<WeeklyPlan> findByExamTaskIdOrderByWeekNumberAsc(@Param("examTaskId") Long examTaskId);
+
+    Optional<WeeklyPlan> findByExamTaskIdAndWeekNumber(Long examTaskId, Integer weekNumber);
 }

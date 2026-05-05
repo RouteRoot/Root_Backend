@@ -34,6 +34,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public String login(LoginRequestDto request){
         User user = userRepository.findByLoginId(request.getLoginId()).orElseThrow(() -> new IllegalArgumentException("가입되지 않은 아이디입니다."));
         if(!passwordEncoder.matches(request.getLoginPw(), user.getLoginPw())){
