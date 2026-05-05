@@ -90,4 +90,14 @@ public class ExamService {
         }
         examDataRepository.deleteById(examCode);
     }
+
+    @Transactional
+    public ExamData getExamDetailWithViewCount(String examCode) {
+        // 조회수 1 증가 
+        examDataRepository.incrementViewCount(examCode);
+        
+        // 업데이트된 최신 정보 조회 후 반환
+        return examDataRepository.findById(examCode)
+                .orElseThrow(() -> new RuntimeException("해당 자격증을 찾을 수 없습니다: " + examCode));
+}
 }

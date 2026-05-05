@@ -29,6 +29,7 @@ public class ExamData {
 
     private String organization; // 주관 기관
 
+    @Column(columnDefinition = "TEXT")
     private String description; // 시험 설명
 
     private String officialUrl; // 공식 링크
@@ -36,6 +37,10 @@ public class ExamData {
     @Builder.Default
     @Column(nullable = false)
     private Boolean isActive = true; // 활성화 여부
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Long viewCount = 0L;
 
     @OneToMany(mappedBy = "examData", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
