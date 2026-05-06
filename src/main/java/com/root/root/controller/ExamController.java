@@ -2,14 +2,25 @@ package com.root.root.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.root.root.dto.ExamResponseDto;
 import com.root.root.entity.ExamData;
 import com.root.root.entity.ExamSchedule;
 import com.root.root.repository.ExamDataRepository;
-import com.root.root.service.*;
+import com.root.root.service.ExamDataBatchService;
+import com.root.root.service.ExamScheduleService;
+import com.root.root.service.ExamService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,9 +38,13 @@ public class ExamController {
     // ===============
 
     @GetMapping("/search")
-    public ResponseEntity<List<ExamResponseDto>> searchExams(@RequestParam String keyword) {
-        List<ExamResponseDto> results = examService.searchExams(keyword);
-        return ResponseEntity.ok(results);
+    public ResponseEntity<Page<ExamResponseDto>> searchExams(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page, // 기본 0페이지 (첫 페이지)
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<ExamResponseDto> result = examService.searchExams(keyword, page, size);
+        return ResponseEntity.ok(result);
     }
 
     // 자격증 상세 조회
@@ -42,8 +57,12 @@ public class ExamController {
 
     // DB 데이터 전체 조회
     @GetMapping("/all")
-    public List<ExamData> getAllExams() {
-        return examDataRepository.findAll();
+    public ResponseEntity<Page<ExamResponseDto>> getAllExams(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<ExamResponseDto> result = examService.getAllExams(page, size);
+        return ResponseEntity.ok(result);
     }
 
     // 2. 수동 데이터 관리
