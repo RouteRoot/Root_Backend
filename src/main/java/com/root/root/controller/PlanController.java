@@ -1,9 +1,6 @@
 package com.root.root.controller;
 
-import com.root.root.dto.PlanCreateRequestDto;
-import com.root.root.dto.PlanDetailResponseDto;
-import com.root.root.dto.PlanResponseDto;
-import com.root.root.dto.PlanTabResponseDto;
+import com.root.root.dto.*;
 import com.root.root.entity.DailyPlan;
 import com.root.root.entity.ExamTask;
 import com.root.root.entity.WeeklyPlan;
@@ -20,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/plans")
@@ -91,11 +89,41 @@ public class PlanController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/daily/migrate")
+    public ResponseEntity<Map<String, Object>> migrateDailyPlan(Authentication authentication, @RequestBody PlanMigrateRequestDto request){
+        String loginId = authentication.getName();
+
+        planService.migrateDailyPlan(loginId, request.getDailyPlanId(), request.getTargetDate());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "학습 플랜이 성공적으로 이동/병합되었습니다.");
+        response.put("targetDate", request.getTargetDate().toString());
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/tabs")
     public ResponseEntity<List<PlanTabResponseDto>> getPlanTabs(Authentication authentication){
         String loginId = authentication.getName();
         List<PlanTabResponseDto> tabs = planService.getMyPlanTabs(loginId);
         return ResponseEntity.ok(tabs);
+    }
+
+    @PostMapping("/redistribute")
+    public ResponseEntity<List<WeeklyPlanResponseDto>> redistributeStudyPlan(Authentication authentication, @RequestBody PlanRedistributeRequestDto requestDto){
+        String loginId = authentication.getName();
+        List<WeeklyPlan> redistributedPlans = planService.redistributePlan(loginId, requestDto);
+        List<WeeklyPlanResponseDto> responseBody = redistributedPlans.stream().map(WeeklyPlanResponseDto::fromEntity).collect(Collectors.toList());
+        return ResponseEntity.ok(responseBody);
+    }
+
+    @GetMapping("/settings/{examTaskId}")
+    public ResponseEntity<PlanSettingsResponseDto> getPlanSettings(
+            Authentication authentication,
+            @PathVariable Long examTaskId) {
+        String loginId = authentication.getName();
+        PlanSettingsResponseDto response = planService.getPlanSettings(loginId, examTaskId);
+        return ResponseEntity.ok(response);
     }
 
     private PlanResponseDto convertToDto(List<WeeklyPlan> savedPlans, Long examTaskId, String taskName){

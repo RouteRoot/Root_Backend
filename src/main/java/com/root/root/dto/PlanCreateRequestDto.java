@@ -1,11 +1,13 @@
 package com.root.root.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.Map;
 
 @Getter
+@Setter
 public class PlanCreateRequestDto {
     private Long examTaskId; // 어떤 자격증의 플랜을 짤 것인지 식별
     private LocalDate examDate; // 유저가 선택한 시험일(D-Day)
