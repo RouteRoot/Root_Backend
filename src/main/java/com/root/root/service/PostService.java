@@ -24,17 +24,31 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    // 커뮤니티
+    // 커뮤니티 boardType
+    private static final List<BoardType> COMMUNITY_BOARD_TYPES = List.of(
+            BoardType.FREE,
+            BoardType.STUDY,
+            BoardType.REVIEW,
+            BoardType.QNA,
+            BoardType.INFO
+    );
+
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> getPosts(BoardType boardType, String sort, int page, int size) {
+    public Page<PostResponseDto> getPosts(BoardType boardType, String sort, int page, int size, String keyword) {
         Sort sorting = "popular".equalsIgnoreCase(sort)
                 ? Sort.by("viewCount").descending()
                 : Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page, size, sorting);
 
-        if (boardType == null) {
-            return postRepository.findAll(pageable).map(PostResponseDto::new);
+        List<BoardType> types = (boardType == null) ? COMMUNITY_BOARD_TYPES : List.of(boardType);
+
+        if (keyword != null && !keyword.isBlank()) {
+            return postRepository.searchByKeywordAndBoardTypes(types, keyword, pageable)
+                    .map(PostResponseDto::new);
         }
-        return postRepository.findByBoardType(boardType, pageable).map(PostResponseDto::new);
+        return postRepository.findByBoardTypeIn(types, pageable)
+                .map(PostResponseDto::new);
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +59,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponseDto> getPopularPosts(int limit) {
-        return postRepository.findAll()
+        return postRepository.findByBoardTypeIn(COMMUNITY_BOARD_TYPES)  // List 반환 시그니처
                 .stream()
                 .sorted(Comparator.comparingInt(Post::getViewCount).reversed())
                 .limit(limit)
@@ -96,7 +110,7 @@ public class PostService {
     public List<PostResponseDto> getMyPosts(String loginId) {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
-        return postRepository.findByAuthorId(user.getId())
+        return postRepository.findByAuthorIdAndBoardTypeIn(user.getId(), COMMUNITY_BOARD_TYPES)
                 .stream()
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
@@ -111,4 +125,55 @@ public class PostService {
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
     }
+
+    // 아카이브
+    // 아카이브 boardType
+    private static final List<BoardType> ARCHIVE_BOARD_TYPES = List.of(
+            BoardType.RECOMMAND,
+            BoardType.CERT_ANALYSIS,
+            BoardType.JOB_ANALYSIS,
+            BoardType.EXAM_INFO,
+            BoardType.STUDY_METHOD,
+            BoardType.PASS_STRATEGY,
+            BoardType.JOB_STRATEGY,
+            BoardType.EXPERT_INSIGHT
+    );
+
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> getArchivePosts(BoardType boardType, String sort, int page, int size, String keyword) {
+        Sort sorting = "popular".equalsIgnoreCase(sort)
+                ? Sort.by("viewCount").descending()
+                : Sort.by("createdAt").descending();
+        Pageable pageable = PageRequest.of(page, size, sorting);
+
+        List<BoardType> types = (boardType == null) ? ARCHIVE_BOARD_TYPES : List.of(boardType);
+
+        if (keyword != null && !keyword.isBlank()) {
+            return postRepository.searchByKeywordAndBoardTypes(types, keyword, pageable)
+                    .map(PostResponseDto::new);
+        }
+        return postRepository.findByBoardTypeIn(types, pageable)
+                .map(PostResponseDto::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getArchiveMyPosts(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+        return postRepository.findByAuthorIdAndBoardTypeIn(user.getId(), ARCHIVE_BOARD_TYPES)
+                .stream()
+                .map(PostResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<PostResponseDto> getArchivePopularPosts(int limit) {
+        return postRepository.findByBoardTypeIn(ARCHIVE_BOARD_TYPES)
+                .stream()
+                .sorted(Comparator.comparingInt(Post::getViewCount).reversed())
+                .limit(limit)
+                .map(PostResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+
 }
