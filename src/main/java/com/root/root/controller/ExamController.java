@@ -1,7 +1,5 @@
 package com.root.root.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.root.root.dto.ExamResponseDto;
 import com.root.root.entity.ExamData;
@@ -21,6 +20,7 @@ import com.root.root.repository.ExamDataRepository;
 import com.root.root.service.ExamDataBatchService;
 import com.root.root.service.ExamScheduleService;
 import com.root.root.service.ExamService;
+import com.root.root.service.FileStorageService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +33,7 @@ public class ExamController {
     private final ExamDataBatchService batchService;
     private final ExamService examService;
     private final ExamScheduleService examScheduleService;
+    private final FileStorageService fileStorageService;
 
     // 1. 조회 및 검색
     // ===============
@@ -115,6 +116,17 @@ public class ExamController {
         examScheduleService.deleteSchedule(scheduleId);
         return ResponseEntity.ok("시험 일정 삭제 성공 (ID: " + scheduleId + ")");
     }
+
+    // 관리자 이미지 업로드
+    @PostMapping("/{examCode}/image")
+    public ResponseEntity<ExamData> uploadExamImage(
+            @PathVariable String examCode,
+            @RequestParam("file") MultipartFile file) {
+
+        ExamData updatedExam = examService.updateExamImage(examCode, file);
+        return ResponseEntity.ok(updatedExam);
+    }
+    
 
     // 3. 외부 API 연동 및 일정 수집
     // ============================

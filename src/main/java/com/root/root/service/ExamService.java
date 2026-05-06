@@ -2,15 +2,12 @@ package com.root.root.service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.root.root.dto.ExamResponseDto;
 import com.root.root.entity.ExamData;
@@ -24,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ExamService {
-
+    private final FileStorageService fileStorageService;
     private final ExamDataRepository examDataRepository;
 
     public Page<ExamResponseDto> getAllExams(int page, int size) {
@@ -108,5 +105,15 @@ public class ExamService {
         // 업데이트된 최신 정보 조회 후 반환
         return examDataRepository.findById(examCode)
                 .orElseThrow(() -> new RuntimeException("해당 자격증을 찾을 수 없습니다: " + examCode));
-}
+    }
+
+    @Transactional
+    public ExamData updateExamImage(String examCode, MultipartFile file) {
+    ExamData exam = examDataRepository.findById(examCode)
+            .orElseThrow(() -> new RuntimeException("해당 자격증을 찾을 수 없습니다: " + examCode));
+    String imageUrl = fileStorageService.storeSingleImage(file); 
+
+    exam.setImageUrl(imageUrl); 
+    return exam;
+    }
 }
