@@ -269,9 +269,15 @@ public class PlanService {
 
             dailyPlanRepository.save(newPlan);
         }else{
-            String mergedDescription = targetPlan.getDescription() + "\n\n[밀린 학습] : " + sourcePlan.getStudyDate() + "에 수행하지 못한 [" + sourcePlan.getTopic() + "] 수행하기";
+            String delayMessage = "[밀린 학습] : " + sourcePlan.getStudyDate() + "에 수행하지 못한 [" + sourcePlan.getTopic() + "] 수행하기";
 
-            targetPlan.setDescription(mergedDescription);
+            if(targetPlan.isRest()){
+                targetPlan.setTopic("밀린 학습 수행하기");
+                targetPlan.setDescription(delayMessage);
+            }else{
+                String originalDesc = targetPlan.getDescription() != null ? targetPlan.getDescription() : "";
+                targetPlan.setDescription(originalDesc + "\n" + delayMessage);
+            }
             targetPlan.setEstimatedHours(targetPlan.getEstimatedHours() + sourcePlan.getEstimatedHours());
             targetPlan.setRest(false);
         }
