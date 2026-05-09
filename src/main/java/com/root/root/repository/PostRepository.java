@@ -18,6 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByAuthorId(Long userId);
     List<Post> findByBoardTypeIn(List<BoardType> boardTypes);
     List<Post> findByAuthorIdAndBoardTypeIn(Long userId, List<BoardType> boardTypes);
+    List<Post> findByBoardTypeInAndCategory(List<BoardType> boardTypes, String category);
 
     @Query("SELECT p FROM Post p WHERE " +
             "(:boardType IS NULL OR p.boardType = :boardType) AND " +
@@ -34,4 +35,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> searchByKeywordAndBoardTypes(@Param("boardTypes") List<BoardType> boardTypes,
                                             @Param("keyword") String keyword,
                                             Pageable pageable);
+
+
+    Page<Post> findByBoardTypeInAndCategory(List<BoardType> boardTypes, String category, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE " +
+            "p.boardType IN :boardTypes AND " +
+            "p.category = :category AND " +
+            "(p.title LIKE %:keyword% OR p.content LIKE %:keyword%)")
+    Page<Post> searchByKeywordAndBoardTypesAndCategory(
+            @Param("boardTypes") List<BoardType> boardTypes,
+            @Param("keyword") String keyword,
+            @Param("category") String category,
+            Pageable pageable);
 }
