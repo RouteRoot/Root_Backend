@@ -2,11 +2,12 @@ package com.root.root.service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.root.root.dto.ExamResponseDto;
 import com.root.root.entity.ExamData;
@@ -20,13 +21,26 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ExamService {
-
+    private final FileStorageService fileStorageService;
     private final ExamDataRepository examDataRepository;
 
-    public List<ExamResponseDto> searchExams(String keyword) {
-        List<ExamData> exams = examDataRepository.findByExamNameWithSchedules(keyword);
+    public Page<ExamResponseDto> getAllExams(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("examCode").ascending());
+        Page<ExamData> exams = examDataRepository.findAllWithSchedules(pageable);
+        
+        return exams.map(this::convertToDto);
+    }
 
-        return exams.stream().map(e -> new ExamResponseDto(
+    public Page<ExamResponseDto> searchExams(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("examCode").ascending());
+        Page<ExamData> exams = examDataRepository.findByExamNameWithSchedules(keyword, pageable);
+        
+        // 따로 빼둔 변환 로직(convertToDto)을 사용하여 코드가 매우 깔끔해집니다!
+        return exams.map(this::convertToDto); 
+    }
+
+    private ExamResponseDto convertToDto(ExamData e) {
+        return new ExamResponseDto(
                 e.getExamCode(),
                 e.getExamName(),
                 e.getExamGroup(),
@@ -35,27 +49,19 @@ public class ExamService {
                 e.getDescription(),
                 e.getSchedules().stream()
                         .map(s -> {
-                            // 필기 D-Day 계산
                             Long docDDay = null;
                             if (s.getDocExamStart() != null) {
                                 docDDay = ChronoUnit.DAYS.between(LocalDate.now(), s.getDocExamStart());
                             }
-
-                            // 실기 D-Day 계산
                             Long pracDDay = null;
                             if (s.getPracExamStart() != null) {
                                 pracDDay = ChronoUnit.DAYS.between(LocalDate.now(), s.getPracExamStart());
                             }
-
                             return new ExamResponseDto.ScheduleDto(
-                                    s.getRound(),
-                                    s.getDocExamStart(),
-                                    docDDay,
-                                    s.getPracExamStart(),
-                                    pracDDay
+                                    s.getRound(), s.getDocExamStart(), docDDay, s.getPracExamStart(), pracDDay
                             );
                         }).collect(Collectors.toList())
-        )).collect(Collectors.toList());
+        );
     }
 
     @Transactional
@@ -99,5 +105,15 @@ public class ExamService {
         // 업데이트된 최신 정보 조회 후 반환
         return examDataRepository.findById(examCode)
                 .orElseThrow(() -> new RuntimeException("해당 자격증을 찾을 수 없습니다: " + examCode));
-}
+    }
+
+    @Transactional
+    public ExamData updateExamImage(String examCode, MultipartFile file) {
+    ExamData exam = examDataRepository.findById(examCode)
+            .orElseThrow(() -> new RuntimeException("해당 자격증을 찾을 수 없습니다: " + examCode));
+    String imageUrl = fileStorageService.storeSingleImage(file); 
+
+    exam.setImageUrl(imageUrl); 
+    return exam;
+    }
 }

@@ -3,8 +3,17 @@ package com.root.root.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -33,6 +42,8 @@ public class ExamData {
     private String description; // 시험 설명
 
     private String officialUrl; // 공식 링크
+    
+    private String imageUrl; // 저장된 이미지 파일명 또는 경로
     
     @Builder.Default
     @Column(nullable = false)
