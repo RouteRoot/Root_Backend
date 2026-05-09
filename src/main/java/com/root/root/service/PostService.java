@@ -160,16 +160,14 @@ public class PostService {
                 : Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page, size, sorting);
 
-        List<BoardType> types = (boardType == null) ? ARCHIVE_BOARD_TYPES : List.of(boardType);
+        List<BoardType> types = ARCHIVE_BOARD_TYPES;
+
+        if (boardType != null && category == null) {
+            category = BOARD_TYPE_CATEGORY_MAP.get(boardType);
+        }
 
         boolean hasKeyword = keyword != null && !keyword.isBlank();
         boolean hasCategory = category != null && !category.isBlank();
-
-        // boardType으로 category 매핑
-        if (boardType != null && category == null) {
-            category = BOARD_TYPE_CATEGORY_MAP.get(boardType);
-            boardType = null; // boardType 조건은 무시하고 category로만 필터
-        }
 
         if (hasKeyword && hasCategory) {
             return postRepository
@@ -208,6 +206,5 @@ public class PostService {
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
     }
-
 
 }
