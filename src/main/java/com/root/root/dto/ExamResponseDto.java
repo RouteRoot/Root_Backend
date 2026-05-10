@@ -5,9 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 
@@ -22,7 +20,11 @@ public class ExamResponseDto {
     private String category;      // 분야 (예: 정보기술)
     private String organization;  // 주관 기관 (예: 한국산업인력공단)
     private String description;   // 설명 (예: 정보통신 분야 자격증)
-
+    private String imageUrl;       // images/custom_1.jpg 등
+    private String officialUrl;    // 큐넷 등 외부 링크
+    private Boolean isActive;      // 활성화 여부
+    private Long viewCount;     // 조회수
+    
     private List<ScheduleDto> schedules;
 
     @Data

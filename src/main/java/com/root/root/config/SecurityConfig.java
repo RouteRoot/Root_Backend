@@ -30,7 +30,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()).cors(cors -> {
-        }).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth.requestMatchers("/api/users/signup", "/api/users/login", "/api/exams/**").permitAll().requestMatchers("/images/**").permitAll().requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().anyRequest().authenticated()).addFilterBefore(new JwtConfig(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        }).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth.requestMatchers("/api/users/signup", "/api/users/login", "/api/exams/**", "/api/exam-categories/**").permitAll().requestMatchers("/images/**").permitAll().requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().anyRequest().authenticated()).addFilterBefore(new JwtConfig(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

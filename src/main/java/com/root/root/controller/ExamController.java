@@ -2,25 +2,14 @@ package com.root.root.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.root.root.dto.ExamResponseDto;
 import com.root.root.entity.ExamData;
 import com.root.root.entity.ExamSchedule;
 import com.root.root.repository.ExamDataRepository;
-import com.root.root.service.ExamDataBatchService;
-import com.root.root.service.ExamScheduleService;
-import com.root.root.service.ExamService;
-import com.root.root.service.FileStorageService;
+import com.root.root.service.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -74,7 +63,7 @@ public class ExamController {
     //자격증 정보 수동 생성 및 전체 수정
     @PostMapping("/manual")
     public ResponseEntity<ExamData> createExamManual(@RequestBody ExamData examData) {
-        return ResponseEntity.ok(examService.saveOrUpdateExam(examData));
+        return ResponseEntity.ok(examService.saveOrUpdateExam(examData, examData.getExamCategoryId()));
     }
 
     //특정 필드(설명, 카테고리 등)만 부분 수정
@@ -82,7 +71,7 @@ public class ExamController {
     public ResponseEntity<ExamData> updateExamPartially(
             @PathVariable String examCode, 
             @RequestBody ExamData updateInfo) {
-        return ResponseEntity.ok(examService.patchExam(examCode, updateInfo));
+        return ResponseEntity.ok(examService.patchExam(examCode, updateInfo, updateInfo.getExamCategoryId()));
     }
     
     //자격증 정보 삭제
@@ -151,5 +140,15 @@ public class ExamController {
         }).start();
         
         return ResponseEntity.ok("전체 자격증 일정 수집이 백그라운드에서 시작되었습니다! VS Code 콘솔 로그를 확인해주세요. (약 3~5분 소요)");
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<Page<ExamResponseDto>> getExamsByCategory(
+            @PathVariable Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<ExamResponseDto> result = examService.getExamsByCategory(categoryId, page, size);
+        return ResponseEntity.ok(result);
     }
 }
