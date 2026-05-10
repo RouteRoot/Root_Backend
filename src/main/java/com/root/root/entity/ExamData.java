@@ -3,17 +3,8 @@ package com.root.root.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter
@@ -34,7 +25,16 @@ public class ExamData {
 
     private Long prerequisiteId; // 선수 시험 ID
 
-    private String category; // 분야
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "exam_category_id") // DB 외래키 컬럼명
+    private ExamCategory examCategory;
+
+
+    @Transient // DB 컬럼으로는 만들지 않고, API 요청 데이터를 받는 용도로만 사용
+    private Long examCategoryId;
+
+    private String category;
+
 
     private String organization; // 주관 기관
 
