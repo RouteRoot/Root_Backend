@@ -1,5 +1,6 @@
 package com.root.root.service;
 
+import java.util.Map;
 import com.root.root.dto.PostRequestDto;
 import com.root.root.dto.PostResponseDto;
 import com.root.root.entity.*;
@@ -129,31 +130,62 @@ public class PostService {
     // 아카이브
     // 아카이브 boardType
     private static final List<BoardType> ARCHIVE_BOARD_TYPES = List.of(
-            BoardType.RECOMMAND,
-            BoardType.CERT_ANALYSIS,
-            BoardType.JOB_ANALYSIS,
-            BoardType.EXAM_INFO,
-            BoardType.STUDY_METHOD,
-            BoardType.PASS_STRATEGY,
-            BoardType.JOB_STRATEGY,
-            BoardType.EXPERT_INSIGHT
+            BoardType.RECOMMAND,      // 입문자추천
+            BoardType.CERT_ANALYSIS,  // 자격증분석
+            BoardType.JOB_ANALYSIS,   // 직무분석
+            BoardType.EXAM_INFO,      // 시험정보
+            BoardType.STUDY_METHOD,   // 공부전략
+            BoardType.PASS_STRATEGY,  // 합격전략
+            BoardType.JOB_STRATEGY,   // 취업전략
+            BoardType.EXPERT_INSIGHT  // 인사이트
+    );
+
+    private static final Map<BoardType, String> BOARD_TYPE_CATEGORY_MAP = Map.of(
+            BoardType.RECOMMAND, "입문자 추천",
+            BoardType.CERT_ANALYSIS, "자격증 분석",
+            BoardType.JOB_ANALYSIS, "직무 분석",
+            BoardType.EXAM_INFO, "시험 정보",
+            BoardType.STUDY_METHOD, "공부법",
+            BoardType.PASS_STRATEGY, "합격 전략",
+            BoardType.JOB_STRATEGY, "취업 전략",
+            BoardType.EXPERT_INSIGHT, "전문가 인사이트"
     );
 
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> getArchivePosts(BoardType boardType, String sort, int page, int size, String keyword) {
+    public Page<PostResponseDto> getArchivePosts(BoardType boardType, String sort,
+                                                 int page, int size,
+                                                 String keyword, String category) {
         Sort sorting = "popular".equalsIgnoreCase(sort)
                 ? Sort.by("viewCount").descending()
                 : Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page, size, sorting);
 
-        List<BoardType> types = (boardType == null) ? ARCHIVE_BOARD_TYPES : List.of(boardType);
+        List<BoardType> types = ARCHIVE_BOARD_TYPES;
 
-        if (keyword != null && !keyword.isBlank()) {
-            return postRepository.searchByKeywordAndBoardTypes(types, keyword, pageable)
+        if (boardType != null && category == null) {
+            category = BOARD_TYPE_CATEGORY_MAP.get(boardType);
+        }
+
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+        boolean hasCategory = category != null && !category.isBlank();
+
+        if (hasKeyword && hasCategory) {
+            return postRepository
+                    .searchByKeywordAndBoardTypesAndCategory(types, keyword, category, pageable)
+                    .map(PostResponseDto::new);
+        } else if (hasKeyword) {
+            return postRepository
+                    .searchByKeywordAndBoardTypes(types, keyword, pageable)
+                    .map(PostResponseDto::new);
+        } else if (hasCategory) {
+            return postRepository
+                    .findByBoardTypeInAndCategory(types, category, pageable)
+                    .map(PostResponseDto::new);
+        } else {
+            return postRepository
+                    .findByBoardTypeIn(types, pageable)
                     .map(PostResponseDto::new);
         }
-        return postRepository.findByBoardTypeIn(types, pageable)
-                .map(PostResponseDto::new);
     }
 
     @Transactional(readOnly = true)
@@ -174,6 +206,5 @@ public class PostService {
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
     }
-
 
 }

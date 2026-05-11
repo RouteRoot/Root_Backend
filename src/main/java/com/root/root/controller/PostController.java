@@ -112,4 +112,44 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
+    @GetMapping("/archive")
+    public ResponseEntity<?> getArchivePosts(
+            @RequestParam(required = false) BoardType boardType,
+            @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category) {
+        try {
+            return ResponseEntity.ok(
+                    postService.getArchivePosts(boardType, sort, page, size, keyword, category));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    @GetMapping("/archive/my")
+    public ResponseEntity<?> getArchiveMyPosts() {
+        try {
+            String loginId = getLoginId();
+            return ResponseEntity.ok(postService.getArchiveMyPosts(loginId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    @GetMapping("/archive/popular")
+    public ResponseEntity<?> getArchivePopularPosts(
+            @RequestParam(defaultValue = "5") int limit) {
+        try {
+            return ResponseEntity.ok(postService.getArchivePopularPosts(limit));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다.");
+        }
+    }
 }

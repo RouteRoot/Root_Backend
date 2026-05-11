@@ -27,9 +27,10 @@ public class ArchiveController {
                                              @RequestParam(defaultValue = "latest") String sort,
                                              @RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "6") int size,
-                                             @RequestParam(required = false) String keyword) {
+                                             @RequestParam(required = false) String keyword,
+                                             @RequestParam(required = false) String category) {
         try {
-            return ResponseEntity.ok(postService.getArchivePosts(boardType, sort, page, size, keyword));
+            return ResponseEntity.ok(postService.getArchivePosts(boardType, sort, page, size, keyword, category));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
