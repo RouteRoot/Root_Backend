@@ -21,7 +21,6 @@ public class PostLikeService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // 좋아요 토글 (추가/취소)
     @Transactional
     public boolean toggleLike(String loginId, Long postId) {
         User user = userRepository.findByLoginId(loginId)
@@ -44,12 +43,10 @@ public class PostLikeService {
                 });
     }
 
-    // 좋아요 수 조회
     public int getLikeCount(Long postId) {
         return postLikeRepository.countByPostId(postId);
     }
 
-    // 좋아요 여부 확인
     public boolean isLiked(String loginId, Long postId) {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
@@ -57,7 +54,6 @@ public class PostLikeService {
         return postLikeRepository.findByUserIdAndPostId(user.getId(), postId).isPresent();
     }
 
-    // 내가 좋아요한 게시글 ID 목록 조회
     public List<Long> getMyLikes(String loginId) {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));

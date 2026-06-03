@@ -23,7 +23,6 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // 특정 게시글의 댓글 목록 조회
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getComments(Long postId) {
         return commentRepository.findByPostId(postId)
@@ -32,7 +31,6 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    // 댓글 작성
     @Transactional
     public CommentResponseDto createComment(String loginId, CommentRequestDto requestDto) {
         User user = userRepository.findByLoginId(loginId)
@@ -50,7 +48,6 @@ public class CommentService {
         return new CommentResponseDto(commentRepository.save(comment));
     }
 
-    // 댓글 수정
     @Transactional
     public CommentResponseDto updateComment(Long commentId, CommentRequestDto requestDto) {
         Comment comment = commentRepository.findById(commentId)
@@ -60,7 +57,6 @@ public class CommentService {
         return new CommentResponseDto(comment);
     }
 
-    // 댓글 삭제
     @Transactional
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
@@ -69,7 +65,6 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    // 내가 작성한 댓글 목록 조회
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getMyComments(String loginId) {
         User user = userRepository.findByLoginId(loginId)

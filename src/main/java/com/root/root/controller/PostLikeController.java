@@ -18,8 +18,6 @@ public class PostLikeController {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
-    // 좋아요 토글
-    // POST /api/likes?postId={postId}
     @PostMapping
     public ResponseEntity<?> toggleLike(@RequestParam Long postId) {
         try {
@@ -33,8 +31,6 @@ public class PostLikeController {
         }
     }
 
-    // 좋아요 수 조회
-    // GET /api/likes/count?postId={postId}
     @GetMapping("/count")
     public ResponseEntity<?> getLikeCount(@RequestParam Long postId) {
         try {
@@ -44,8 +40,6 @@ public class PostLikeController {
         }
     }
 
-    // 좋아요 여부 확인
-    // GET /api/likes/check?postId={postId}
     @GetMapping("/check")
     public ResponseEntity<?> isLiked(@RequestParam Long postId) {
         try {
@@ -56,8 +50,6 @@ public class PostLikeController {
         }
     }
 
-    // 내가 좋아요한 게시글 ID 목록 조회
-    // GET /api/likes
     @GetMapping
     public ResponseEntity<?> getMyLikes() {
         try {

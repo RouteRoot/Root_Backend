@@ -16,8 +16,6 @@ public class PostImageController {
 
     private final FileStorageService fileStorageService;
 
-    // 이미지 업로드
-    // POST /api/posts/images
     @PostMapping
     public ResponseEntity<?> uploadImage(@RequestParam("image") MultipartFile image) {
         try {
