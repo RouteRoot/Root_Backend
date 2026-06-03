@@ -19,8 +19,6 @@ public class CommentController {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
-    // 특정 게시글의 댓글 목록 조회
-    // GET /api/comments?postId={postId}
     @GetMapping
     public ResponseEntity<?> getComments(@RequestParam Long postId) {
         try {
@@ -30,8 +28,6 @@ public class CommentController {
         }
     }
 
-    // 내가 작성한 댓글 목록 조회
-    // GET /api/comments/my
     @GetMapping("/my")
     public ResponseEntity<?> getMyComments() {
         try {
@@ -44,8 +40,6 @@ public class CommentController {
         }
     }
 
-    // 댓글 작성
-    // POST /api/comments
     @PostMapping
     public ResponseEntity<?> createComment(@RequestBody CommentRequestDto requestDto) {
         try {
@@ -58,8 +52,6 @@ public class CommentController {
         }
     }
 
-    // 댓글 수정
-    // PUT /api/comments/{commentId}
     @PutMapping("/{commentId}")
     public ResponseEntity<?> updateComment(@PathVariable Long commentId,
                                            @RequestBody CommentRequestDto requestDto) {
@@ -72,8 +64,6 @@ public class CommentController {
         }
     }
 
-    // 댓글 삭제
-    // DELETE /api/comments/{commentId}
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
         try {

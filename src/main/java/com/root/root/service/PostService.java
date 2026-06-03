@@ -26,7 +26,6 @@ public class PostService {
     private final UserRepository userRepository;
 
     // 커뮤니티
-    // 커뮤니티 boardType
     private static final List<BoardType> COMMUNITY_BOARD_TYPES = List.of(
             BoardType.FREE,
             BoardType.STUDY,
@@ -128,7 +127,6 @@ public class PostService {
     }
 
     // 아카이브
-    // 아카이브 boardType
     private static final List<BoardType> ARCHIVE_BOARD_TYPES = List.of(
             BoardType.RECOMMAND,      // 입문자추천
             BoardType.CERT_ANALYSIS,  // 자격증분석

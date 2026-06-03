@@ -20,8 +20,6 @@ public class ArchiveController {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
-    // 게시글 목록 조회 (키워드 검색 포함)
-    // GET /api/archive
     @GetMapping
     public ResponseEntity<?> getArchivePosts(@RequestParam(required = false) BoardType boardType,
                                              @RequestParam(defaultValue = "latest") String sort,
@@ -36,8 +34,6 @@ public class ArchiveController {
         }
     }
 
-    // 인기글 조회
-    // GET /api/archive/popular?limit=5
     @GetMapping("/popular")
     public ResponseEntity<?> getPopularPosts(@RequestParam(defaultValue = "5") int limit) {
         try {
@@ -47,8 +43,6 @@ public class ArchiveController {
         }
     }
 
-    // 내 게시글 목록 조회
-    // GET /api/archive/my
     @GetMapping("/my")
     public ResponseEntity<?> getMyPosts() {
         try {
@@ -61,8 +55,6 @@ public class ArchiveController {
         }
     }
 
-    // 게시글 상세 조회
-    // GET /api/archive/{postId}
     @GetMapping("/{postId}")
     public ResponseEntity<?> getPost(@PathVariable Long postId) {
         try {
@@ -74,8 +66,6 @@ public class ArchiveController {
         }
     }
 
-    // 게시글 작성
-    // POST /api/archive
     @PostMapping
     public ResponseEntity<?> createPost(@ModelAttribute PostRequestDto requestDto) {
         try {
@@ -88,8 +78,6 @@ public class ArchiveController {
         }
     }
 
-    // 게시글 수정
-    // PUT /api/archive/{postId}
     @PutMapping("/{postId}")
     public ResponseEntity<?> updatePost(@PathVariable Long postId,
                                         @ModelAttribute PostRequestDto requestDto) {
@@ -102,8 +90,6 @@ public class ArchiveController {
         }
     }
 
-    // 게시글 삭제
-    // DELETE /api/archive/{postId}
     @DeleteMapping("/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable Long postId) {
         try {
